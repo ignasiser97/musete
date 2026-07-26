@@ -27,6 +27,7 @@ musete/
 │   ├── players.js             # pestaña Jugadores
 │   ├── leaderboard.js         # pestaña Clasificación
 │   ├── matches.js             # pestaña Registrar + feed de últimas partidas en Inicio
+│   ├── history.js             # pestaña Historial (todas las partidas, filtro por jugador)
 │   ├── pairings.js            # pestaña Emparejar (3 modos)
 │   └── app.js                 # router switchTab(), SW, pull-to-refresh — último <script>
 └── .github/workflows/deploy.yml

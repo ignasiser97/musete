@@ -1,7 +1,7 @@
 // Router de pestañas, registro del service worker, banner de actualización,
 // pull-to-refresh y arranque de la app. Debe cargarse el último de todos los <script>.
 
-const TABS = ['ini', 'cla', 'jug', 'reg', 'emp'];
+const TABS = ['ini', 'cla', 'jug', 'reg', 'emp', 'his'];
 
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(btn =>
@@ -18,6 +18,7 @@ function loadTab(tab) {
     case 'jug': loadPlayersTab(); break;
     case 'reg': loadRegisterTab(); break;
     case 'emp': loadPairingsTab(); break;
+    case 'his': loadHistoryTab(); break;
   }
 }
 

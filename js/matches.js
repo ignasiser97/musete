@@ -132,18 +132,21 @@ function renderRecentMatchesFeed(matches) {
     feed.innerHTML = '<p class="hint">Todavía no se ha jugado ninguna partida.</p>';
     return;
   }
-  matches.forEach(m => {
-    const row = document.createElement('div');
-    row.className = 'feed-row';
-    const teamA = `${m.team_a_player1_name?.name ?? '?'} / ${m.team_a_player2_name?.name ?? '?'}`;
-    const teamB = `${m.team_b_player1_name?.name ?? '?'} / ${m.team_b_player2_name?.name ?? '?'}`;
-    row.innerHTML = `
-      <div class="feed-teams">
-        <span class="${m.score_a > m.score_b ? 'feed-winner' : ''}">${escHtml(teamA)} ${m.score_a}</span>
-        <span class="feed-vs">–</span>
-        <span class="${m.score_b > m.score_a ? 'feed-winner' : ''}">${m.score_b} ${escHtml(teamB)}</span>
-      </div>
-      <div class="feed-delta">±${m.elo_delta} ELO</div>`;
-    feed.appendChild(row);
-  });
+  matches.forEach(m => feed.appendChild(buildMatchRowElement(m)));
+}
+
+// Fila reutilizada por el feed de Inicio y por el Historial completo.
+function buildMatchRowElement(m) {
+  const row = document.createElement('div');
+  row.className = 'feed-row';
+  const teamA = `${m.team_a_player1_name?.name ?? '?'} / ${m.team_a_player2_name?.name ?? '?'}`;
+  const teamB = `${m.team_b_player1_name?.name ?? '?'} / ${m.team_b_player2_name?.name ?? '?'}`;
+  row.innerHTML = `
+    <div class="feed-teams">
+      <span class="${m.score_a > m.score_b ? 'feed-winner' : ''}">${escHtml(teamA)} ${m.score_a}</span>
+      <span class="feed-vs">–</span>
+      <span class="${m.score_b > m.score_a ? 'feed-winner' : ''}">${m.score_b} ${escHtml(teamB)}</span>
+    </div>
+    <div class="feed-delta">±${m.elo_delta} ELO</div>`;
+  return row;
 }

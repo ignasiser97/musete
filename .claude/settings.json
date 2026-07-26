@@ -7,7 +7,16 @@
       "Bash(git branch *)",
       "Bash(node -e ' *)",
       "Bash(gh --version)",
-      "Bash(gh auth *)"
+      "Bash(gh auth *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(git config *)",
+      "Read(//Users/ignaciosisamonserrano/.ssh/**)",
+      "Bash(ssh -T git@github.com -o BatchMode=yes -o ConnectTimeout=5)",
+      "WebFetch(domain:ignasiser97.github.io)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }

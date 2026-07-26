@@ -30,6 +30,15 @@ async function fetchRecentMatches(limit = 10) {
   return data;
 }
 
+async function fetchAllMatchesWithNames() {
+  const { data, error } = await db
+    .from('matches')
+    .select('*, team_a_player1_name:players!matches_team_a_player1_fkey(name), team_a_player2_name:players!matches_team_a_player2_fkey(name), team_b_player1_name:players!matches_team_b_player1_fkey(name), team_b_player2_name:players!matches_team_b_player2_fkey(name)')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
 async function fetchAllMatches() {
   const { data, error } = await db.from('matches').select('*').order('created_at', { ascending: true });
   if (error) throw error;
