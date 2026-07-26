@@ -83,6 +83,43 @@ h2 { font-size: clamp(1.1rem, 4vw, 1.4rem); margin: 0 0 12px; }
 .feed-winner { font-weight: 700; color: var(--pos); }
 .feed-delta { color: var(--text-dim); font-size: 0.8rem; white-space: nowrap; }
 
+/* --- Info ELO --- */
+.elo-info {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+.elo-info summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.elo-info-body { margin-top: 12px; }
+.elo-info-body ul { padding-left: 20px; margin: 10px 0; }
+.elo-info-body li { margin-bottom: 6px; font-size: 0.92rem; }
+.elo-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.82rem; }
+.elo-table th, .elo-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+.elo-table th { color: var(--text-dim); font-weight: 600; }
+.elo-info-nested {
+  margin-top: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.elo-info-nested summary { font-weight: 600; font-size: 0.9rem; color: var(--text-dim); }
+.step-block { margin: 14px 0; }
+.step-formula {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 0.82rem;
+  margin: 6px 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
 /* --- Clasificación --- */
 .lb-row {
   display: grid;
@@ -260,6 +297,74 @@ button {
       <button class="btn-primary" onclick="switchTab('reg')">Registrar partida</button>
       <button class="btn-secondary" onclick="switchTab('emp')">Emparejar</button>
     </div>
+
+    <details class="elo-info">
+      <summary>ℹ️ ¿Cómo funciona el ELO?</summary>
+      <div class="elo-info-body">
+        <p>Todo el mundo arranca la semana con <strong>1000 puntos</strong>. A partir de ahí, cada partida mueve el marcador según lo que se "esperaba" que pasara vs. lo que pasa de verdad.</p>
+
+        <p><strong>Las reglas del cotarro:</strong></p>
+        <ul>
+          <li>😎 <strong>Ganas siendo favorito</strong> → subes poquito, total, ya se sabía.</li>
+          <li>🔥 <strong>Ganas siendo el equipo más flojo</strong> → subes un buen pico. Las sorpresas se premian.</li>
+          <li>💀 <strong>Cuanto más limpio sea el paseíllo</strong> (le ganas todos los sets, sin dejarle ni uno), más ELO te llevas — y más le quitas al rival.</li>
+          <li>⚖️ <strong>Lo que sube uno, lo pierde el otro</strong> — el ELO no se crea ni se destruye, solo cambia de bolsillo.</li>
+          <li>🚫 En el mus no hay empates, así que la clasificación se mueve SIEMPRE, partida tras partida.</li>
+          <li>🎾 Da igual si jugáis al mejor de 3 o al mejor de 5 — lo que cuenta es si ha sido un paseíllo (todos los sets para el mismo equipo) o si ha estado reñido (el perdedor se llevó al menos un set).</li>
+        </ul>
+
+        <table class="elo-table">
+          <thead><tr><th>Situación</th><th>Resultado</th><th>ELO</th></tr></thead>
+          <tbody>
+            <tr><td>Dos parejas parejas</td><td>Ganas 2-0 (paseíllo)</td><td>+24 / -24</td></tr>
+            <tr><td>Dos parejas parejas</td><td>Ganas 2-1 (reñida)</td><td>+19 / -19</td></tr>
+            <tr><td>Dos parejas parejas</td><td>Ganas 3-2 (al límite)</td><td>+18 / -18</td></tr>
+            <tr><td>Vais de underdogs, y les barréis 2-0</td><td>🎉</td><td>+31 / -31</td></tr>
+          </tbody>
+        </table>
+        <p class="hint">Si le metes un paseíllo a los favoritos, es cuando más ELO te llevas. 💪</p>
+
+        <details class="elo-info-nested">
+          <summary>🔢 Ver el cálculo paso a paso</summary>
+          <div class="step-block">
+            <p><strong>Paso 1 — ¿qué se esperaba?</strong> Es la probabilidad "teórica" de que gane el equipo A, calculada solo con la diferencia de ELO entre los dos equipos (el ELO de un equipo es la <strong>media</strong> de sus 2 jugadores, no la suma). Si los dos equipos tienen el mismo ELO, la probabilidad es 50/50.</p>
+            <div class="step-formula">expectedA = 1 / (1 + 10^((eloB - eloA) / 400))</div>
+            <p class="hint">Equipos iguales (1000 vs 1000) → expectedA = 0.5. Underdogs (950 vs 1050) → expectedA ≈ 0.36 (solo un 36% de probabilidad de ganar, según el ELO).</p>
+          </div>
+          <div class="step-block">
+            <p><strong>Paso 2 — la "sorpresa" en bruto.</strong> Cuanto más te alejas de lo esperado, más grande es el número (1 si ganas, 0 si pierdes).</p>
+            <div class="step-formula">baseDelta = 32 × (resultado_real − expectedA)</div>
+            <p class="hint">Equipos iguales, ganas → 32 × (1 − 0.5) = 16. Underdogs, ganáis → 32 × (1 − 0.36) = 20.48 — más, porque nadie lo esperaba.</p>
+          </div>
+          <div class="step-block">
+            <p><strong>Paso 3 — ¿cuán limpia fue la victoria?</strong> Se mira qué proporción de los sets totales te llevaste, y eso da un multiplicador entre 1.0 (victoria mínima) y 1.5 (paseíllo total).</p>
+            <table class="elo-table">
+              <thead><tr><th>Resultado</th><th>winRatio</th><th>marginFactor</th></tr></thead>
+              <tbody>
+                <tr><td>2-0</td><td>2/2 = 1.0</td><td>1.5 (tope)</td></tr>
+                <tr><td>2-1</td><td>2/3 = 0.667</td><td>1.167</td></tr>
+                <tr><td>3-2</td><td>3/5 = 0.6</td><td>1.1</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="step-block">
+            <p><strong>Paso 4 — se multiplica todo.</strong></p>
+            <div class="step-formula">finalDelta = redondeo(baseDelta × marginFactor)</div>
+            <table class="elo-table">
+              <thead><tr><th>Caso</th><th>baseDelta</th><th>× marginFactor</th><th>= finalDelta</th></tr></thead>
+              <tbody>
+                <tr><td>Iguales, 2-0</td><td>16</td><td>× 1.5</td><td>24</td></tr>
+                <tr><td>Iguales, 2-1</td><td>16</td><td>× 1.167</td><td>19</td></tr>
+                <tr><td>Iguales, 3-2</td><td>16</td><td>× 1.1</td><td>18</td></tr>
+                <tr><td>Underdogs, 2-0</td><td>20.48</td><td>× 1.5</td><td>31</td></tr>
+              </tbody>
+            </table>
+            <p class="hint">Misma "sorpresa" (16) pero distinto premio según lo limpia que fue la victoria (24 vs 19 vs 18), y en el caso underdog el premio parte ya más alto (20.48 en vez de 16) porque ganar siendo el equipo peor valorado es más sorprendente antes incluso de mirar el marcador.</p>
+          </div>
+        </details>
+      </div>
+    </details>
+
     <h2>Últimas partidas</h2>
     <div id="ini-feed"></div>
   </div>
@@ -293,8 +398,8 @@ button {
         <div class="field"><label>Jugador 2</label><select id="reg-b2"></select></div>
       </div>
       <div class="score-row">
-        <div class="field"><label>Marcador A</label><input id="reg-score-a" type="number" min="0" required></div>
-        <div class="field"><label>Marcador B</label><input id="reg-score-b" type="number" min="0" required></div>
+        <div class="field"><label>Sets ganados A</label><input id="reg-score-a" type="number" min="0" required></div>
+        <div class="field"><label>Sets ganados B</label><input id="reg-score-b" type="number" min="0" required></div>
       </div>
       <p id="reg-error" class="error"></p>
       <button id="reg-submit" type="submit" class="btn-primary">Guardar resultado</button>

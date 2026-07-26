@@ -16,7 +16,8 @@
       "WebFetch(domain:ignasiser97.github.io)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(node --check js/elo.js)"
     ]
   }
 }

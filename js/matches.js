@@ -32,9 +32,9 @@ function validateMatchForm(a1, a2, b1, b2, scoreA, scoreB) {
   if (!a1 || !a2 || !b1 || !b2) return 'Selecciona los 4 jugadores.';
   const ids = [a1, a2, b1, b2];
   if (new Set(ids).size !== 4) return 'Un jugador no puede repetirse en la misma partida.';
-  if (!Number.isFinite(scoreA) || !Number.isFinite(scoreB)) return 'Introduce los dos marcadores.';
-  if (scoreA < 0 || scoreB < 0) return 'Los marcadores no pueden ser negativos.';
-  if (scoreA === scoreB) return 'El mus no tiene empates: los marcadores deben ser distintos.';
+  if (!Number.isFinite(scoreA) || !Number.isFinite(scoreB)) return 'Introduce los sets ganados por cada equipo.';
+  if (scoreA < 0 || scoreB < 0) return 'Los sets ganados no pueden ser negativos.';
+  if (scoreA === scoreB) return 'El mus no tiene empates: los sets ganados deben ser distintos.';
   return null;
 }
 

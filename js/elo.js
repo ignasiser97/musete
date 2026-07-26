@@ -3,7 +3,6 @@
 
 const STARTING_ELO      = 1000;  // rating inicial de un jugador nuevo
 const K_FACTOR          = 32;    // sensibilidad del ajuste, igual que el estándar de ajedrez
-const MARGIN_NORM       = 30;    // ~ partida típica de mus a 30/40 "buenas"
 const MAX_MARGIN_FACTOR = 1.5;   // techo para que un resultado exagerado no dispare el ranking
 const MIN_ELO           = 100;   // suelo defensivo
 
@@ -11,7 +10,10 @@ function expectedScore(ratingA, ratingB) {
   return 1 / (1 + Math.pow(10, (ratingB - ratingA) / 400));
 }
 
-// scoreA/scoreB: marcador final de cada equipo (sin empates en mus).
+// scoreA/scoreB: SETS ganados por cada equipo (no puntos) — el formato de la partida
+// (al mejor de 3, de 5, o lo que toque esa ronda) puede variar, así que el margen se mide
+// como proporción de sets ganados, no como diferencia absoluta: un 2-0 (mejor de 3) pesa
+// igual que un 3-0 (mejor de 5) — ambos son un "paseíllo" completo.
 // eloA1/eloA2/eloB1/eloB2: ELO actual de cada jugador antes de esta partida.
 // Devuelve { winner: 'A'|'B', delta, expectedA, marginFactor } — delta es la magnitud
 // (positiva) que suman los ganadores y restan los perdedores.
@@ -28,8 +30,10 @@ function computeEloDelta(eloA1, eloA2, eloB1, eloB2, scoreA, scoreB) {
 
   const baseDelta = K_FACTOR * (actualA - expectedA);
 
-  const margin = Math.abs(scoreA - scoreB);
-  const marginFactor = Math.min(MAX_MARGIN_FACTOR, 1 + margin / MARGIN_NORM);
+  // winRatio va de "más de la mitad" (victoria mínima posible, ej. 3-2) a 1 (paseíllo, ej. 3-0).
+  // Se mapea linealmente a marginFactor: 0.5 → 1 (sin bonus), 1 → MAX_MARGIN_FACTOR.
+  const winRatio = Math.max(scoreA, scoreB) / (scoreA + scoreB);
+  const marginFactor = 1 + (winRatio - 0.5) * 2 * (MAX_MARGIN_FACTOR - 1);
 
   const finalDelta = Math.round(baseDelta * marginFactor);
 
@@ -46,10 +50,13 @@ function applyEloFloor(elo) {
 }
 
 /* Ejemplos verificados a mano (ver CLAUDE.md § ELO):
- * - Equipos iguales (1000 vs 1000), 30-10: expectedA=0.5, baseDelta=16,
- *   margin=20, marginFactor=1.667→capado a 1.5, finalDelta=24.
- * - Equipos iguales, 30-28 (ajustada): margin=2, marginFactor=1.067, finalDelta=17.
- * - Remontada (equipo A de media 950 vs equipo B de media 1050, gana A):
+ * - Equipos iguales (1000 vs 1000), ganan 2-0 (paseíllo, mejor de 3): expectedA=0.5,
+ *   baseDelta=16, winRatio=1, marginFactor=1.5 (tope), finalDelta=24.
+ * - Equipos iguales, ganan 2-1 (mejor de 3, ajustada): winRatio=0.667, marginFactor=1.167,
+ *   finalDelta=19.
+ * - Equipos iguales, ganan 3-2 (mejor de 5, al límite): winRatio=0.6, marginFactor=1.1,
+ *   finalDelta=18.
+ * - Remontada (equipo A de media 950 vs equipo B de media 1050, gana A 2-0):
  *   expectedA≈0.36 → baseDelta mayor que si A hubiese sido favorito, premiando la sorpresa
- *   antes incluso de aplicar el factor de margen.
+ *   antes incluso de aplicar el factor de margen; finalDelta=31.
  */

@@ -38,6 +38,7 @@ Orden de `<script>` en `index.html` es significativo: cada archivo define funcio
 ## Datos — jugadores y partidos
 
 - `players.matches_played` es un contador denormalizado = `wins + losses`, mantenido a mano en cada `updatePlayer()` (no hay trigger en BD).
+- `matches.score_a`/`score_b` son **sets ganados** por cada equipo, no puntos/piedras — el formato de la partida (al mejor de 3, de 5, u otro) puede variar de una ronda a otra, la app no lo fuerza.
 - `matches.score_a != score_b` siempre — el mus no tiene empates, se valida en el formulario (`validateMatchForm` en `matches.js`).
 - `elo_history` guarda `elo_before`/`elo_after`/`delta` por jugador y partida — pensada para poder implementar en el futuro un "deshacer última partida" sin recalcular toda la semana (revertir cada jugador por `delta`, borrar la fila de `matches`, que hace cascade sobre sus 4 filas de `elo_history`). No implementado todavía.
 
@@ -96,23 +97,26 @@ Constantes (`js/elo.js`, fáciles de ajustar):
 ```
 STARTING_ELO      = 1000
 K_FACTOR          = 32
-MARGIN_NORM       = 30     // ~ partida típica de mus a 30/40 "buenas"
 MAX_MARGIN_FACTOR = 1.5    // techo para que un resultado exagerado no dispare el ranking
 MIN_ELO           = 100
 ```
+
+El resultado que se registra son **sets ganados** (`score_a`/`score_b`), no puntos, y el formato de la partida (mejor de 3, de 5...) puede cambiar de una ronda a otra. Por eso el margen no se mide como diferencia absoluta de sets, sino como proporción de sets ganados (`winRatio`) — así un 2-0 (mejor de 3) y un 3-0 (mejor de 5) pesan lo mismo (ambos son un paseíllo completo), y un 2-1 pesa parecido a un 3-2 (ambos son el margen mínimo posible).
 
 1. `teamRating` = media de ELO de sus 2 jugadores.
 2. `expectedA = 1 / (1 + 10^((teamBRating - teamARating) / 400))` (Elo estándar).
 3. `actualA = scoreA > scoreB ? 1 : 0`.
 4. `baseDelta = K_FACTOR * (actualA - expectedA)`.
-5. `marginFactor = min(MAX_MARGIN_FACTOR, 1 + |scoreA-scoreB| / MARGIN_NORM)`.
-6. `finalDelta = round(baseDelta * marginFactor)`.
-7. Ganadores: `+|finalDelta|`; perdedores: `-|finalDelta|` (con suelo `MIN_ELO`).
+5. `winRatio = max(scoreA, scoreB) / (scoreA + scoreB)` — va de "justo más de la mitad" (victoria mínima, ej. 3-2) a 1 (paseíllo, ej. 3-0 o 2-0).
+6. `marginFactor = 1 + (winRatio - 0.5) * 2 * (MAX_MARGIN_FACTOR - 1)` — mapea `winRatio` 0.5→1 (sin bonus) y 1→`MAX_MARGIN_FACTOR` (tope).
+7. `finalDelta = round(baseDelta * marginFactor)`.
+8. Ganadores: `+|finalDelta|`; perdedores: `-|finalDelta|` (con suelo `MIN_ELO`).
 
 Ejemplos verificados (ver comentario al final de `elo.js`):
-- Equipos iguales (1000 vs 1000), 30-10 → `finalDelta = 24`.
-- Equipos iguales, 30-28 → `finalDelta = 17`.
-- Equipo A (media 950) gana a equipo B (media 1050) → `expectedA≈0.36`, recompensa mayor por la sorpresa antes de aplicar el margen.
+- Equipos iguales (1000 vs 1000), ganan 2-0 (paseíllo, mejor de 3) → `finalDelta = 24`.
+- Equipos iguales, ganan 2-1 (mejor de 3, ajustada) → `finalDelta = 19`.
+- Equipos iguales, ganan 3-2 (mejor de 5, al límite) → `finalDelta = 18`.
+- Equipo A (media 950) gana a equipo B (media 1050) 2-0 → `expectedA≈0.36`, recompensa mayor por la sorpresa antes de aplicar el margen; `finalDelta = 31`.
 
 **Nota de integridad**: la actualización no es transaccional (no hay RPC de Postgres) — es un cálculo en cliente seguido de varios `insert`/`update` secuenciales a Supabase. Riesgo de condición de carrera si dos personas envían resultados simultáneamente: bajo dado el contexto (amigos turnándose para apuntar), aceptado para el MVP. Posible mejora futura: función `record_match()` en Postgres llamada vía `supabase.rpc()` envolviendo todo en una transacción.
 
