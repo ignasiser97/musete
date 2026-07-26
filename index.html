@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Musete</title>
+<meta name="theme-color" content="#12100e">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="logo.png">
+<style>
+:root {
+  --bg: #12100e;
+  --surface: #1c1815;
+  --card: #24201c;
+  --border: #3a332c;
+  --text: #f2ede6;
+  --text-dim: #a89f92;
+  --accent: #c0392b;
+  --pos: #4caf50;
+  --neg: #e05d44;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
+
+.wrap {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: clamp(12px, 4vw, 24px);
+}
+
+h1 { font-size: clamp(1.4rem, 5vw, 2rem); margin: 0 0 12px; }
+h2 { font-size: clamp(1.1rem, 4vw, 1.4rem); margin: 0 0 12px; }
+
+.hidden { display: none !important; }
+
+.hint { color: var(--text-dim); font-size: 0.9rem; }
+.error { color: var(--neg); font-size: 0.9rem; }
+.success { color: var(--pos); }
+
+/* --- Identidad --- */
+#identity-banner {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.identity-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.chip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+}
+.link-btn { background: none; border: none; color: var(--accent); text-decoration: underline; padding: 0; font-size: 0.9rem; }
+
+/* --- Home --- */
+.leader-headline { font-size: 1.2rem; font-weight: 600; margin: 8px 0 16px; }
+.quick-actions { display: flex; gap: 10px; margin-bottom: 20px; }
+.feed-row {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.feed-teams { display: flex; gap: 6px; flex-wrap: wrap; font-size: 0.9rem; }
+.feed-vs { color: var(--text-dim); }
+.feed-winner { font-weight: 700; color: var(--pos); }
+.feed-delta { color: var(--text-dim); font-size: 0.8rem; white-space: nowrap; }
+
+/* --- Clasificación --- */
+.lb-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 60px 70px 20px;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.lb-pos { color: var(--text-dim); }
+.lb-name { font-weight: 600; }
+.lb-elo { text-align: right; }
+.lb-record { text-align: right; color: var(--text-dim); font-size: 0.85rem; }
+.trend-up { color: var(--pos); }
+.trend-down { color: var(--neg); }
+
+/* --- Jugadores --- */
+.player-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.player-meta { color: var(--text-dim); font-size: 0.85rem; }
+.add-form { display: flex; gap: 8px; margin-top: 16px; }
+.add-form input { flex: 1; }
+
+/* --- Formularios --- */
+input, select {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 1rem;
+  width: 100%;
+}
+label { display: block; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 4px; }
+.field { margin-bottom: 12px; }
+.team-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.team-block h3 { margin: 0 0 10px; font-size: 1rem; }
+.score-row { display: flex; gap: 10px; align-items: center; }
+.score-row .field { flex: 1; margin-bottom: 0; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+.btn-primary, .btn-secondary {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+.btn-primary:disabled { opacity: 0.6; }
+
+/* --- Emparejar --- */
+.checklist { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.checklist-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mode-selector { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.mode-selector button {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: left;
+}
+.mode-selector button strong { display: block; }
+.mode-selector button small { color: var(--text-dim); }
+.table-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.table-card-title { color: var(--text-dim); font-size: 0.8rem; margin-bottom: 6px; }
+.table-card-teams { display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
+.table-vs { color: var(--text-dim); font-weight: 400; }
+.sitouts { color: var(--text-dim); font-size: 0.9rem; margin: 10px 0; }
+
+/* --- Pull to refresh --- */
+#ptr-indicator {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  text-align: center;
+  padding: 8px;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  transform: translateY(-100%);
+  transition: transform 0.2s;
+  z-index: 20;
+}
+#ptr-indicator.visible { transform: translateY(0); }
+
+/* --- Update banner --- */
+#update-banner {
+  position: fixed;
+  bottom: calc(64px + env(safe-area-inset-bottom) + 10px);
+  left: 12px; right: 12px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 30;
+}
+#update-banner button {
+  background: #fff;
+  color: var(--accent);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
+}
+
+/* --- Tabs --- */
+.tabs {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 10;
+}
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  padding: 10px 4px 8px;
+  font-size: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.tab-btn.active { color: var(--accent); }
+.tab-icon { font-size: 1.2rem; }
+</style>
+</head>
+<body>
+
+<div id="ptr-indicator">Actualizando…</div>
+
+<div class="wrap">
+
+  <div id="ini-tab" class="tab-panel">
+    <h1>Musete</h1>
+    <div id="identity-banner"></div>
+    <p id="ini-leader" class="leader-headline"></p>
+    <div class="quick-actions">
+      <button class="btn-primary" onclick="switchTab('reg')">Registrar partida</button>
+      <button class="btn-secondary" onclick="switchTab('emp')">Emparejar</button>
+    </div>
+    <h2>Últimas partidas</h2>
+    <div id="ini-feed"></div>
+  </div>
+
+  <div id="cla-tab" class="tab-panel hidden">
+    <h1>Clasificación</h1>
+    <div id="cla-list"></div>
+  </div>
+
+  <div id="jug-tab" class="tab-panel hidden">
+    <h1>Jugadores</h1>
+    <div id="jug-list"></div>
+    <form id="jug-add-form" class="add-form" onsubmit="handleAddPlayer(event)">
+      <input id="jug-new-name" type="text" placeholder="Nombre del jugador" required maxlength="40">
+      <button id="jug-add-submit" type="submit" class="btn-primary">Añadir</button>
+    </form>
+    <p id="jug-add-error" class="error"></p>
+  </div>
+
+  <div id="reg-tab" class="tab-panel hidden">
+    <h1>Registrar partida</h1>
+    <form id="reg-form" onsubmit="handleSubmitMatch(event)">
+      <div class="team-block">
+        <h3>Equipo A</h3>
+        <div class="field"><label>Jugador 1</label><select id="reg-a1"></select></div>
+        <div class="field"><label>Jugador 2</label><select id="reg-a2"></select></div>
+      </div>
+      <div class="team-block">
+        <h3>Equipo B</h3>
+        <div class="field"><label>Jugador 1</label><select id="reg-b1"></select></div>
+        <div class="field"><label>Jugador 2</label><select id="reg-b2"></select></div>
+      </div>
+      <div class="score-row">
+        <div class="field"><label>Marcador A</label><input id="reg-score-a" type="number" min="0" required></div>
+        <div class="field"><label>Marcador B</label><input id="reg-score-b" type="number" min="0" required></div>
+      </div>
+      <p id="reg-error" class="error"></p>
+      <button id="reg-submit" type="submit" class="btn-primary">Guardar resultado</button>
+    </form>
+  </div>
+
+  <div id="emp-tab" class="tab-panel hidden">
+    <h1>Emparejar</h1>
+    <h2>¿Quién está presente?</h2>
+    <div id="emp-checklist" class="checklist"></div>
+    <h2>Modo</h2>
+    <div class="mode-selector">
+      <button type="button" onclick="handleGeneratePairings('random')">
+        <strong>Aleatorio puro</strong>
+        <small>Sortea sin memoria de rondas anteriores.</small>
+      </button>
+      <button type="button" onclick="handleGeneratePairings('no-repeat')">
+        <strong>Sin repetir</strong>
+        <small>Evita repetir compañero/rival de esta semana.</small>
+      </button>
+      <button type="button" onclick="handleGeneratePairings('elo-balanced')">
+        <strong>Equilibrado por ELO</strong>
+        <small>Forma mesas de nivel parejo.</small>
+      </button>
+    </div>
+    <p id="emp-error" class="error"></p>
+    <div id="emp-result"></div>
+  </div>
+
+</div>
+
+<div id="update-banner" class="hidden">
+  <span>Hay una nueva versión disponible</span>
+  <button id="update-btn">Actualizar</button>
+</div>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="ini" onclick="switchTab('ini')"><span class="tab-icon">🏠</span>Inicio</button>
+  <button class="tab-btn" data-tab="cla" onclick="switchTab('cla')"><span class="tab-icon">🏆</span>Clasificación</button>
+  <button class="tab-btn" data-tab="jug" onclick="switchTab('jug')"><span class="tab-icon">👥</span>Jugadores</button>
+  <button class="tab-btn" data-tab="reg" onclick="switchTab('reg')"><span class="tab-icon">📝</span>Registrar</button>
+  <button class="tab-btn" data-tab="emp" onclick="switchTab('emp')"><span class="tab-icon">🔀</span>Emparejar</button>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/identity.js"></script>
+<script src="js/elo.js"></script>
+<script src="js/players.js"></script>
+<script src="js/leaderboard.js"></script>
+<script src="js/matches.js"></script>
+<script src="js/pairings.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

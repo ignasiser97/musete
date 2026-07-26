@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /Users/ignaciosisamonserrano/VSProjects/)",
+      "Read(//Users/ignaciosisamonserrano/VSProjects/**)",
+      "Bash(git init *)",
+      "Bash(git branch *)",
+      "Bash(node -e ' *)",
+      "Bash(gh --version)",
+      "Bash(gh auth *)"
+    ]
+  }
+}
