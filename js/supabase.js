@@ -60,3 +60,13 @@ async function insertEloHistory(rows) {
   const { error } = await db.from('elo_history').insert(rows);
   if (error) throw error;
 }
+
+async function fetchEloHistoryForPlayer(playerId) {
+  const { data, error } = await db
+    .from('elo_history')
+    .select('*')
+    .eq('player_id', playerId)
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data;
+}

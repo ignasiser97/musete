@@ -1,4 +1,4 @@
-const VERSION = 'v7';
+const VERSION = 'v8';
 const CACHE   = 'musete-' + VERSION;
 
 const CORE = [
@@ -13,6 +13,7 @@ const CORE = [
   './js/leaderboard.js',
   './js/matches.js',
   './js/history.js',
+  './js/playerdetail.js',
   './js/pairings.js',
   './js/app.js',
 ];

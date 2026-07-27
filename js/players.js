@@ -23,6 +23,7 @@ function renderPlayersList() {
   PLAYERS.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(p => {
     const row = document.createElement('div');
     row.className = 'player-row';
+    row.addEventListener('click', () => openPlayerDetail(p));
     const name = document.createElement('span');
     name.textContent = p.name;
     const meta = document.createElement('span');

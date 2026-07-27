@@ -262,10 +262,72 @@ h2::before {
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 2px 8px var(--shadow);
+  cursor: pointer;
+  transition: transform 0.12s ease;
 }
+.player-row:hover { border-color: var(--accent); }
+.player-row:active { transform: scale(0.98); }
 .player-meta { color: var(--text-dim); font-size: 0.85rem; }
 .add-form { display: flex; gap: 8px; margin-top: 16px; }
 .add-form input { flex: 1; }
+
+/* --- Modal detalle de jugador --- */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  position: relative;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: 18px 18px 0 0;
+  padding: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 -8px 30px var(--shadow);
+  animation: modalSlideUp 0.2s ease;
+}
+@keyframes modalSlideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.modal-close {
+  position: absolute;
+  top: 12px; right: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.player-modal-title {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  font-size: 1.3rem;
+  margin: 0 26px 8px 0;
+  padding-left: 0;
+}
+.player-modal-title::before { content: none; }
+.elo-chart { margin: 14px 0 18px; }
+.elo-chart svg { width: 100%; height: 120px; display: block; }
+.elo-chart-range {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
 
 /* --- Formularios --- */
 input:not([type="checkbox"]), select {
@@ -603,6 +665,13 @@ button {
 
 <button class="fab" onclick="switchTab('reg')" aria-label="Registrar partida" title="Registrar partida">+</button>
 
+<div id="player-modal" class="modal hidden" onclick="if (event.target === this) closePlayerModal()">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closePlayerModal()" aria-label="Cerrar">✕</button>
+    <div id="player-modal-body"></div>
+  </div>
+</div>
+
 <div id="update-banner" class="hidden">
   <span>Hay una nueva versión disponible</span>
   <button id="update-btn">Actualizar</button>
@@ -625,6 +694,7 @@ button {
 <script src="js/leaderboard.js"></script>
 <script src="js/matches.js"></script>
 <script src="js/history.js"></script>
+<script src="js/playerdetail.js"></script>
 <script src="js/pairings.js"></script>
 <script src="js/app.js"></script>
 </body>
