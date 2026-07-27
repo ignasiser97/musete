@@ -1,10 +1,23 @@
 // Pestaña Registrar: formulario para introducir el resultado de una partida.
 // También alimenta el feed de "últimas partidas" de la pestaña Inicio.
 
+let PENDING_EDIT_MATCH = null; // datos a preprellenar tras "Editar" en la última partida
+
 async function loadRegisterTab() {
   await ensurePlayersLoadedForForm();
   populateMatchFormSelects();
   document.getElementById('reg-error').textContent = '';
+
+  if (PENDING_EDIT_MATCH) {
+    document.getElementById('reg-a1').value = PENDING_EDIT_MATCH.a1;
+    document.getElementById('reg-a2').value = PENDING_EDIT_MATCH.a2;
+    document.getElementById('reg-b1').value = PENDING_EDIT_MATCH.b1;
+    document.getElementById('reg-b2').value = PENDING_EDIT_MATCH.b2;
+    document.getElementById('reg-score-a').value = PENDING_EDIT_MATCH.scoreA;
+    document.getElementById('reg-score-b').value = PENDING_EDIT_MATCH.scoreB;
+    document.getElementById('reg-error').textContent = 'Corrige el resultado y vuelve a guardarlo.';
+    PENDING_EDIT_MATCH = null;
+  }
 }
 
 async function ensurePlayersLoadedForForm() {
@@ -132,11 +145,14 @@ function renderRecentMatchesFeed(matches) {
     feed.innerHTML = '<p class="hint">Todavía no se ha jugado ninguna partida.</p>';
     return;
   }
-  matches.forEach(m => feed.appendChild(buildMatchRowElement(m)));
+  matches.forEach((m, i) => feed.appendChild(buildMatchRowElement(m, i === 0)));
 }
 
-// Fila reutilizada por el feed de Inicio y por el Historial completo.
-function buildMatchRowElement(m) {
+// Fila reutilizada por el feed de Inicio, el Historial completo y el modal de jugador.
+// isLatest: solo la partida más reciente de toda la app puede "editarse" — deshacer
+// cualquier otra partida requeriría recalcular el ELO de todas las posteriores, lo
+// cual no está implementado (ver CLAUDE.md).
+function buildMatchRowElement(m, isLatest = false) {
   const row = document.createElement('div');
   row.className = 'feed-row';
   const teamA = `${m.team_a_player1_name?.name ?? '?'} / ${m.team_a_player2_name?.name ?? '?'}`;
@@ -148,6 +164,56 @@ function buildMatchRowElement(m) {
       <span class="feed-vs">–</span>
       <span class="${!aWon ? 'feed-winner' : ''}">${m.score_b} ${escHtml(teamB)}${!aWon ? ' 🏆' : ''}</span>
     </div>
-    <div class="feed-delta">±${m.elo_delta} ELO</div>`;
+    <div class="feed-side">
+      <div class="feed-delta">±${m.elo_delta} ELO</div>
+      ${isLatest ? '<button type="button" class="feed-edit-btn" title="Editar resultado">✏️</button>' : ''}
+    </div>`;
+  if (isLatest) {
+    row.querySelector('.feed-edit-btn').addEventListener('click', () => handleEditMatch(m));
+  }
   return row;
+}
+
+// Deshace la última partida (revierte ELO/W-L de los 4 jugadores usando elo_history,
+// borra la fila de matches) y precarga el formulario de Registrar con los mismos
+// datos para que sea rápido corregir el resultado y volver a guardarlo.
+async function handleEditMatch(match) {
+  if (!confirm('¿Deshacer esta partida para corregirla? Se revertirá el ELO y tendrás que volver a guardarla.')) {
+    return;
+  }
+
+  try {
+    const [historyRows, players] = await Promise.all([
+      fetchEloHistoryForMatch(match.id),
+      fetchPlayers(),
+    ]);
+
+    const byId = id => players.find(p => p.id === id);
+    const aWon = match.score_a > match.score_b;
+    const teamAIds = [match.team_a_player1, match.team_a_player2];
+
+    for (const h of historyRows) {
+      const player = byId(h.player_id);
+      if (!player) continue;
+      const won = teamAIds.includes(h.player_id) ? aWon : !aWon;
+      await updatePlayer(h.player_id, {
+        elo: h.elo_before,
+        wins: player.wins - (won ? 1 : 0),
+        losses: player.losses - (won ? 0 : 1),
+        matches_played: player.matches_played - 1,
+      });
+    }
+
+    await deleteMatch(match.id);
+
+    PENDING_EDIT_MATCH = {
+      a1: match.team_a_player1, a2: match.team_a_player2,
+      b1: match.team_b_player1, b2: match.team_b_player2,
+      scoreA: match.score_a, scoreB: match.score_b,
+    };
+    closePlayerModal();
+    switchTab('reg');
+  } catch (e) {
+    alert('No se pudo deshacer la partida. Comprueba tu conexión e inténtalo de nuevo.');
+  }
 }

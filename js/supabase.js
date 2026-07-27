@@ -76,3 +76,14 @@ async function fetchEloHistoryForPlayer(playerId) {
   if (error) throw error;
   return data;
 }
+
+async function fetchEloHistoryForMatch(matchId) {
+  const { data, error } = await db.from('elo_history').select('*').eq('match_id', matchId);
+  if (error) throw error;
+  return data;
+}
+
+async function deleteMatch(matchId) {
+  const { error } = await db.from('matches').delete().eq('id', matchId);
+  if (error) throw error;
+}

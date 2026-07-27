@@ -54,5 +54,6 @@ function renderHistoryList() {
   count.textContent = `${matches.length} partida${matches.length === 1 ? '' : 's'}`;
   list.appendChild(count);
 
-  matches.forEach(m => list.appendChild(buildMatchRowElement(m)));
+  const latestId = ALL_MATCHES[0]?.id;
+  matches.forEach(m => list.appendChild(buildMatchRowElement(m, m.id === latestId)));
 }

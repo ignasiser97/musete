@@ -15,7 +15,7 @@ async function openPlayerDetail(player) {
       fetchAllMatchesWithNames(),
     ]);
     const matches = allMatches.filter(m => matchIncludesPlayer(m, player.id));
-    renderPlayerDetail(player, history, matches);
+    renderPlayerDetail(player, history, matches, allMatches[0]?.id);
   } catch (e) {
     body.innerHTML = '<p class="error">No se pudo cargar el histórico.</p>';
   }
@@ -25,7 +25,7 @@ function closePlayerModal() {
   document.getElementById('player-modal').classList.add('hidden');
 }
 
-function renderPlayerDetail(player, history, matches) {
+function renderPlayerDetail(player, history, matches, latestId) {
   const body = document.getElementById('player-modal-body');
   body.innerHTML = '';
 
@@ -53,7 +53,7 @@ function renderPlayerDetail(player, history, matches) {
   matchesTitle.textContent = 'Sus partidas';
   body.appendChild(matchesTitle);
 
-  matches.forEach(m => body.appendChild(buildMatchRowElement(m)));
+  matches.forEach(m => body.appendChild(buildMatchRowElement(m, m.id === latestId)));
 }
 
 function buildEloChart(history) {
