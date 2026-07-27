@@ -131,6 +131,29 @@ h2::before {
   text-align: center;
 }
 .quick-actions { display: flex; gap: 10px; margin-bottom: 20px; }
+.quick-actions .btn-secondary { flex: 1; }
+
+/* --- FAB: Registrar partida --- */
+.fab {
+  position: fixed;
+  right: 18px;
+  bottom: calc(64px + env(safe-area-inset-bottom) + 18px);
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 1.9rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(192,57,43,0.45);
+  z-index: 25;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.fab:active { transform: scale(0.92); box-shadow: 0 3px 10px rgba(192,57,43,0.4); }
 .feed-row {
   background: var(--card);
   border: 1px solid var(--border);
@@ -432,8 +455,7 @@ button {
     <div id="identity-banner"></div>
     <p id="ini-leader" class="leader-headline"></p>
     <div class="quick-actions">
-      <button class="btn-primary" onclick="switchTab('reg')">Registrar partida</button>
-      <button class="btn-secondary" onclick="switchTab('emp')">Emparejar</button>
+      <button class="btn-secondary" onclick="switchTab('emp')">🔀 Emparejar</button>
     </div>
 
     <details class="elo-info">
@@ -578,6 +600,8 @@ button {
   </div>
 
 </div>
+
+<button class="fab" onclick="switchTab('reg')" aria-label="Registrar partida" title="Registrar partida">+</button>
 
 <div id="update-banner" class="hidden">
   <span>Hay una nueva versión disponible</span>
