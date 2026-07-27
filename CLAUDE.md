@@ -21,13 +21,13 @@ musete/
 ├── sw.js                    # service worker (caché offline + banner de actualización)
 ├── logo.png                 # icono — placeholder generado, sustituir por uno propio
 ├── js/
-│   ├── supabase.js           # cliente Supabase + helpers de acceso a datos + escHtml()
+│   ├── supabase.js           # cliente Supabase + helpers de acceso a datos + escHtml()/buildAvatarElement()
 │   ├── elo.js                # fórmula de ELO (funciones puras)
 │   ├── players.js             # pestaña Jugadores
 │   ├── leaderboard.js         # pestaña Clasificación
 │   ├── matches.js             # pestaña Registrar + feed de últimas partidas en Inicio
 │   ├── history.js             # pestaña Historial (todas las partidas, filtro por jugador)
-│   ├── playerdetail.js         # modal de detalle de jugador (gráfica de ELO + sus partidas)
+│   ├── playerdetail.js         # modal de detalle de jugador (nombre editable, foto, gráfica de ELO, curiosidades, sus partidas)
 │   ├── pairings.js            # pestaña Emparejar (3 modos)
 │   └── app.js                 # router switchTab(), SW, pull-to-refresh — último <script>
 └── .github/workflows/deploy.yml
@@ -43,6 +43,7 @@ Orden de `<script>` en `index.html` es significativo: cada archivo define funcio
 - `elo_history` guarda `elo_before`/`elo_after`/`delta` por jugador y partida. Alimenta dos cosas: la gráfica de evolución de ELO del modal de detalle de jugador (`playerdetail.js`), y los botones "✏️ Editar"/"🗑️ Borrar" de `matches.js`.
 - **Editar/borrar partida**: solo está disponible en la **partida más reciente de toda la app** (los botones ✏️/🗑️ solo aparecen en esa fila, en Inicio/Historial/modal de jugador). Ambos comparten `revertMatchEffects()`: revierte el `elo`/`wins`/`losses`/`matches_played` de los 4 jugadores a partir de sus filas de `elo_history` (usa `elo_before` directamente, no resta el `delta` a mano) y borra la fila de `matches` (cascade sobre sus 4 filas de `elo_history`). "Editar" además precarga el formulario de Registrar con los mismos jugadores/marcador para corregirlo rápido; "Borrar" simplemente refresca la pestaña actual. Deliberadamente **no** se permite tocar partidas antiguas: hacerlo bien exigiría recalcular en cadena el ELO de todas las partidas posteriores de esos 4 jugadores, lo cual no está implementado.
 - `matches.recorded_by` siempre se inserta a `null` — no hay mecanismo de identidad de usuario en la app (se quitó por no aportar nada: nadie consultaba quién había apuntado cada partida). La columna se deja en el esquema por si se retoma en el futuro.
+- `players.avatar_url` (nullable) — foto de perfil opcional, ver sección "Storage — fotos de perfil" más abajo.
 
 ## Backend — Supabase
 
@@ -56,6 +57,7 @@ create table players (
   wins integer not null default 0,
   losses integer not null default 0,
   matches_played integer not null default 0,
+  avatar_url text,
   created_at timestamptz not null default now()
 );
 
@@ -94,6 +96,19 @@ Ejemplo de política a añadir en el SQL editor si el proyecto ya existía sin e
 ```sql
 create policy "anon delete matches" on matches for delete to anon using (true);
 ```
+
+**Storage — fotos de perfil**: bucket `avatars` (público), usado por `uploadAvatar()`/`buildAvatarElement()` en `supabase.js`. Setup completo en el SQL editor:
+```sql
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
+create policy "anon upload avatars" on storage.objects
+  for insert to anon with check (bucket_id = 'avatars');
+create policy "anon update avatars" on storage.objects
+  for update to anon using (bucket_id = 'avatars');
+```
+El nombre de fichero es el `id` del jugador (`{id}.jpg`) con `upsert: true` — subir una foto nueva siempre sustituye a la anterior, sin dejar huérfanas en el bucket. La foto se redimensiona a un cuadrado de 300×300 con `<canvas>` en el propio navegador antes de subirla (`resizeImageToBlob()` en `playerdetail.js`), para no gastar de más en datos/Storage con una foto de cámara sin comprimir. No hay botón de "quitar foto" — solo subir/sustituir; sin foto se muestra un círculo con la inicial del nombre (`buildAvatarElement()`).
 
 Secrets de GitHub (`Settings → Secrets and variables → Actions`) a configurar **antes** del primer deploy: `SUPABASE_URL`, `SUPABASE_KEY` (anon/public). Si faltan, el `sed` del workflow no sustituye nada y se publican los placeholders `%%...%%` literales en producción.
 

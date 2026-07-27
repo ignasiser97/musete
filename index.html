@@ -212,7 +212,7 @@ h2::before {
 /* --- Clasificación --- */
 .lb-row {
   display: grid;
-  grid-template-columns: 34px 1fr 62px 74px 22px;
+  grid-template-columns: 34px 32px 1fr 62px 74px 22px;
   align-items: center;
   gap: 8px;
   padding: 12px 10px;
@@ -247,8 +247,8 @@ h2::before {
 /* --- Jugadores --- */
 .player-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: 12px 14px;
   margin-bottom: 7px;
   background: var(--card);
@@ -260,9 +260,51 @@ h2::before {
 }
 .player-row:hover { border-color: var(--accent); }
 .player-row:active { transform: scale(0.98); }
-.player-meta { color: var(--text-dim); font-size: 0.85rem; }
+.player-row-main {
+  display: flex;
+  flex: 1;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+}
+.player-meta { color: var(--text-dim); font-size: 0.85rem; white-space: nowrap; }
 .add-form { display: flex; gap: 8px; margin-top: 16px; }
 .add-form input { flex: 1; }
+
+/* --- Avatares --- */
+.avatar {
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.avatar-clickable { cursor: pointer; position: relative; }
+.avatar-clickable::after {
+  content: '📷';
+  position: absolute;
+  right: -2px; bottom: -2px;
+  background: var(--accent);
+  border-radius: 50%;
+  width: 22px; height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  border: 2px solid var(--surface);
+}
+.player-row .avatar { width: 40px; height: 40px; font-size: 1rem; }
+.lb-row .avatar { width: 32px; height: 32px; font-size: 0.85rem; }
+.player-modal-avatar-wrap { display: flex; justify-content: center; margin-bottom: 12px; }
+.player-modal-avatar-wrap .avatar { width: 84px; height: 84px; font-size: 2rem; }
 
 /* --- Modal detalle de jugador --- */
 .modal {
@@ -304,14 +346,34 @@ h2::before {
   align-items: center;
   justify-content: center;
 }
+.player-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 30px 8px 0;
+}
 .player-modal-title {
   font-family: 'Fredoka', sans-serif;
   font-weight: 600;
   font-size: 1.3rem;
-  margin: 0 26px 8px 0;
+  margin: 0;
   padding-left: 0;
 }
 .player-modal-title::before { content: none; }
+.icon-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 4px 9px;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.icon-btn:active { transform: scale(0.92); }
+.player-name-input {
+  flex: 1;
+  min-width: 0;
+}
 .elo-chart { margin: 14px 0 18px; }
 .elo-chart svg { width: 100%; height: 120px; display: block; }
 .elo-chart-range {
@@ -320,6 +382,15 @@ h2::before {
   color: var(--text-dim);
   font-size: 0.75rem;
   margin-top: 4px;
+}
+.curiosities { margin: 10px 0 6px; }
+.curiosity-row {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
 }
 
 /* --- Formularios --- */

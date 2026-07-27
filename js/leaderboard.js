@@ -35,6 +35,8 @@ function renderLeaderboard(players) {
     posEl.className = 'lb-pos';
     posEl.textContent = rank <= 3 ? RANK_MEDALS[rank - 1] : rank;
 
+    const avatarEl = buildAvatarElement(p);
+
     const nameEl = document.createElement('span');
     nameEl.className = 'lb-name';
     nameEl.textContent = p.name;
@@ -55,7 +57,7 @@ function renderLeaderboard(players) {
       trendEl.classList.add(prev > rank ? 'trend-up' : 'trend-down');
     }
 
-    row.append(posEl, nameEl, eloEl, recordEl, trendEl);
+    row.append(posEl, avatarEl, nameEl, eloEl, recordEl, trendEl);
     wrap.appendChild(row);
   });
 

@@ -14,6 +14,23 @@ function escHtml(str) {
   return div.innerHTML;
 }
 
+// Avatar circular compartido por Jugadores/Clasificación/modal de jugador.
+// Sin foto: círculo con la inicial del nombre. clickable añade el badge de cámara
+// (el listener de click lo añade quien llama, esto solo pone el estilo).
+function buildAvatarElement(player, clickable = false) {
+  const el = document.createElement('div');
+  el.className = 'avatar' + (clickable ? ' avatar-clickable' : '');
+  if (player.avatar_url) {
+    const img = document.createElement('img');
+    img.src = player.avatar_url;
+    img.alt = '';
+    el.appendChild(img);
+  } else {
+    el.textContent = (player.name || '?').charAt(0).toUpperCase();
+  }
+  return el;
+}
+
 async function fetchPlayers() {
   const { data, error } = await db.from('players').select('*').order('elo', { ascending: false });
   if (error) throw error;
@@ -86,4 +103,19 @@ async function fetchEloHistoryForMatch(matchId) {
 async function deleteMatch(matchId) {
   const { error } = await db.from('matches').delete().eq('id', matchId);
   if (error) throw error;
+}
+
+// Sube (o sustituye) la foto de un jugador en el bucket "avatars" y devuelve su URL
+// pública. El nombre de fichero es el propio id del jugador (upsert), así que subir
+// una nueva siempre reemplaza a la anterior sin dejar huérfanas. El `?t=` al final
+// evita que el navegador siga mostrando la foto vieja cacheada bajo la misma URL.
+async function uploadAvatar(playerId, blob) {
+  const path = `${playerId}.jpg`;
+  const { error } = await db.storage.from('avatars').upload(path, blob, {
+    contentType: 'image/jpeg',
+    upsert: true,
+  });
+  if (error) throw error;
+  const { data } = db.storage.from('avatars').getPublicUrl(path);
+  return `${data.publicUrl}?t=${Date.now()}`;
 }

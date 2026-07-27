@@ -24,13 +24,19 @@ function renderPlayersList() {
     const row = document.createElement('div');
     row.className = 'player-row';
     row.addEventListener('click', () => openPlayerDetail(p));
+
+    const avatar = buildAvatarElement(p);
+
+    const main = document.createElement('div');
+    main.className = 'player-row-main';
     const name = document.createElement('span');
     name.textContent = p.name;
     const meta = document.createElement('span');
     meta.className = 'player-meta';
     meta.textContent = `ELO ${p.elo} · ${p.wins}V-${p.losses}D`;
-    row.appendChild(name);
-    row.appendChild(meta);
+    main.append(name, meta);
+
+    row.append(avatar, main);
     list.appendChild(row);
   });
 }
