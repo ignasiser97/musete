@@ -21,13 +21,13 @@ musete/
 ├── sw.js                    # service worker (caché offline + banner de actualización)
 ├── logo.png                 # icono — placeholder generado, sustituir por uno propio
 ├── js/
-│   ├── supabase.js           # cliente Supabase + helpers de acceso a datos
-│   ├── identity.js           # "¿quién eres?" — localStorage, sin contraseña
+│   ├── supabase.js           # cliente Supabase + helpers de acceso a datos + escHtml()
 │   ├── elo.js                # fórmula de ELO (funciones puras)
 │   ├── players.js             # pestaña Jugadores
 │   ├── leaderboard.js         # pestaña Clasificación
 │   ├── matches.js             # pestaña Registrar + feed de últimas partidas en Inicio
 │   ├── history.js             # pestaña Historial (todas las partidas, filtro por jugador)
+│   ├── playerdetail.js         # modal de detalle de jugador (gráfica de ELO + sus partidas)
 │   ├── pairings.js            # pestaña Emparejar (3 modos)
 │   └── app.js                 # router switchTab(), SW, pull-to-refresh — último <script>
 └── .github/workflows/deploy.yml
@@ -40,7 +40,8 @@ Orden de `<script>` en `index.html` es significativo: cada archivo define funcio
 - `players.matches_played` es un contador denormalizado = `wins + losses`, mantenido a mano en cada `updatePlayer()` (no hay trigger en BD).
 - `matches.score_a`/`score_b` son **sets ganados** por cada equipo, no puntos/piedras — el formato de la partida (al mejor de 3, de 5, u otro) puede variar de una ronda a otra, la app no lo fuerza.
 - `matches.score_a != score_b` siempre — el mus no tiene empates, se valida en el formulario (`validateMatchForm` en `matches.js`).
-- `elo_history` guarda `elo_before`/`elo_after`/`delta` por jugador y partida — pensada para poder implementar en el futuro un "deshacer última partida" sin recalcular toda la semana (revertir cada jugador por `delta`, borrar la fila de `matches`, que hace cascade sobre sus 4 filas de `elo_history`). No implementado todavía.
+- `elo_history` guarda `elo_before`/`elo_after`/`delta` por jugador y partida — pensada para poder implementar en el futuro un "deshacer última partida" sin recalcular toda la semana (revertir cada jugador por `delta`, borrar la fila de `matches`, que hace cascade sobre sus 4 filas de `elo_history`). No implementado todavía. También alimenta la gráfica de evolución de ELO del modal de detalle de jugador (`playerdetail.js`).
+- `matches.recorded_by` siempre se inserta a `null` — no hay mecanismo de identidad de usuario en la app (se quitó por no aportar nada: nadie consultaba quién había apuntado cada partida). La columna se deja en el esquema por si se retoma en el futuro.
 
 ## Backend — Supabase
 
@@ -129,10 +130,6 @@ Ejemplos verificados (ver comentario al final de `elo.js`):
 - **Equilibrado por ELO**: mismo criterio de descanso que "sin repetir". Se ordena por ELO y se empareja en "serpiente" (1º con último, 2º con penúltimo…) para formar equipos de nivel parejo; luego se emparejan mesas por ELO combinado más cercano.
 
 Las 3 son heurísticas greedy documentadas, no solvers óptimos — suficiente para grupos de 8-16 amigos. El botón "Regenerar" vuelve a ejecutar el mismo modo (los empates aleatorios producen resultados distintos en cada click).
-
-## Identidad de usuario
-
-Sin contraseña — grupo cerrado de amigos. `localStorage['musete_user']` guarda `{id, name}` del jugador actual (`CURRENT_PLAYER` en `identity.js`). Se usa para preseleccionar formularios y para rellenar `matches.recorded_by` (trazabilidad sin autenticación real).
 
 ## CSS — variables y convenciones
 

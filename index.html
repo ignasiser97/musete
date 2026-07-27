@@ -82,25 +82,6 @@ h2::before {
 .error { color: var(--neg); font-size: 0.9rem; }
 .success { color: var(--pos); }
 
-/* --- Identidad --- */
-#identity-banner {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 16px;
-}
-.identity-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.chip {
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 0.9rem;
-}
-.link-btn { background: none; border: none; color: var(--accent); text-decoration: underline; padding: 0; font-size: 0.9rem; }
-
 /* --- Home --- */
 .hero { text-align: center; padding: 10px 0 6px; }
 .hero-suits { font-size: 1.3rem; letter-spacing: 12px; margin-bottom: 2px; }
@@ -514,7 +495,6 @@ button {
       <h1 class="hero-title">Musete</h1>
       <p class="hero-tagline">Ranking ELO de los cachorros</p>
     </div>
-    <div id="identity-banner"></div>
     <p id="ini-leader" class="leader-headline"></p>
     <div class="quick-actions">
       <button class="btn-secondary" onclick="switchTab('emp')">🔀 Emparejar</button>
@@ -688,7 +668,6 @@ button {
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js"></script>
-<script src="js/identity.js"></script>
 <script src="js/elo.js"></script>
 <script src="js/players.js"></script>
 <script src="js/leaderboard.js"></script>

@@ -13,7 +13,7 @@ function switchTab(tab) {
 
 function loadTab(tab) {
   switch (tab) {
-    case 'ini': renderIdentityBanner(); loadHomeSummary(); loadRecentMatchesFeed(); break;
+    case 'ini': loadHomeSummary(); loadRecentMatchesFeed(); break;
     case 'cla': loadLeaderboardTab(); break;
     case 'jug': loadPlayersTab(); break;
     case 'reg': loadRegisterTab(); break;
@@ -98,7 +98,6 @@ function setupPullToRefresh() {
 }
 
 // --- Bootstrap ---
-loadCurrentPlayer();
 registerServiceWorker();
 setupPullToRefresh();
 switchTab('ini');

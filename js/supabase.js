@@ -8,6 +8,12 @@ const SUPABASE_KEY = '%%SUPABASE_KEY%%';
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+function escHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 async function fetchPlayers() {
   const { data, error } = await db.from('players').select('*').order('elo', { ascending: false });
   if (error) throw error;

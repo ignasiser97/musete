@@ -78,7 +78,7 @@ async function handleSubmitMatch(event) {
       team_b_player1: pB1.id, team_b_player2: pB2.id,
       score_a: scoreA, score_b: scoreB,
       elo_delta: delta,
-      recorded_by: CURRENT_PLAYER ? CURRENT_PLAYER.id : null,
+      recorded_by: null,
     });
 
     for (const [id, info] of Object.entries(updated)) {

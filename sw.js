@@ -1,4 +1,4 @@
-const VERSION = 'v8';
+const VERSION = 'v9';
 const CACHE   = 'musete-' + VERSION;
 
 const CORE = [
@@ -7,7 +7,6 @@ const CORE = [
   './manifest.json',
   './logo.png',
   './js/supabase.js',
-  './js/identity.js',
   './js/elo.js',
   './js/players.js',
   './js/leaderboard.js',
