@@ -160,15 +160,17 @@ h2::before {
   padding: 3px 8px;
 }
 .feed-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-.feed-edit-btn {
+.feed-actions { display: flex; gap: 6px; }
+.feed-edit-btn, .feed-delete-btn {
   background: var(--card);
   border: 1px solid var(--border);
-  color: var(--text);
   border-radius: 8px;
   padding: 3px 9px;
   font-size: 0.85rem;
 }
-.feed-edit-btn:active { transform: scale(0.92); }
+.feed-edit-btn { color: var(--text); }
+.feed-delete-btn { color: var(--neg); }
+.feed-edit-btn:active, .feed-delete-btn:active { transform: scale(0.92); }
 
 /* --- Info ELO --- */
 .elo-info {

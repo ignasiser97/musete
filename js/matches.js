@@ -166,46 +166,55 @@ function buildMatchRowElement(m, isLatest = false) {
     </div>
     <div class="feed-side">
       <div class="feed-delta">±${m.elo_delta} ELO</div>
-      ${isLatest ? '<button type="button" class="feed-edit-btn" title="Editar resultado">✏️</button>' : ''}
+      ${isLatest ? `
+        <div class="feed-actions">
+          <button type="button" class="feed-edit-btn" title="Editar resultado">✏️</button>
+          <button type="button" class="feed-delete-btn" title="Borrar partida">🗑️</button>
+        </div>` : ''}
     </div>`;
   if (isLatest) {
     row.querySelector('.feed-edit-btn').addEventListener('click', () => handleEditMatch(m));
+    row.querySelector('.feed-delete-btn').addEventListener('click', () => handleDeleteMatch(m));
   }
   return row;
 }
 
-// Deshace la última partida (revierte ELO/W-L de los 4 jugadores usando elo_history,
-// borra la fila de matches) y precarga el formulario de Registrar con los mismos
+// Revierte el elo/wins/losses/matches_played de los 4 jugadores de una partida
+// (a partir de sus filas de elo_history) y borra la fila de matches. Compartido
+// por "Editar" (revierte + precarga el formulario) y "Borrar" (revierte y ya está).
+async function revertMatchEffects(match) {
+  const [historyRows, players] = await Promise.all([
+    fetchEloHistoryForMatch(match.id),
+    fetchPlayers(),
+  ]);
+
+  const byId = id => players.find(p => p.id === id);
+  const aWon = match.score_a > match.score_b;
+  const teamAIds = [match.team_a_player1, match.team_a_player2];
+
+  for (const h of historyRows) {
+    const player = byId(h.player_id);
+    if (!player) continue;
+    const won = teamAIds.includes(h.player_id) ? aWon : !aWon;
+    await updatePlayer(h.player_id, {
+      elo: h.elo_before,
+      wins: player.wins - (won ? 1 : 0),
+      losses: player.losses - (won ? 0 : 1),
+      matches_played: player.matches_played - 1,
+    });
+  }
+
+  await deleteMatch(match.id);
+}
+
+// Deshace la última partida y precarga el formulario de Registrar con los mismos
 // datos para que sea rápido corregir el resultado y volver a guardarlo.
 async function handleEditMatch(match) {
   if (!confirm('¿Deshacer esta partida para corregirla? Se revertirá el ELO y tendrás que volver a guardarla.')) {
     return;
   }
-
   try {
-    const [historyRows, players] = await Promise.all([
-      fetchEloHistoryForMatch(match.id),
-      fetchPlayers(),
-    ]);
-
-    const byId = id => players.find(p => p.id === id);
-    const aWon = match.score_a > match.score_b;
-    const teamAIds = [match.team_a_player1, match.team_a_player2];
-
-    for (const h of historyRows) {
-      const player = byId(h.player_id);
-      if (!player) continue;
-      const won = teamAIds.includes(h.player_id) ? aWon : !aWon;
-      await updatePlayer(h.player_id, {
-        elo: h.elo_before,
-        wins: player.wins - (won ? 1 : 0),
-        losses: player.losses - (won ? 0 : 1),
-        matches_played: player.matches_played - 1,
-      });
-    }
-
-    await deleteMatch(match.id);
-
+    await revertMatchEffects(match);
     PENDING_EDIT_MATCH = {
       a1: match.team_a_player1, a2: match.team_a_player2,
       b1: match.team_b_player1, b2: match.team_b_player2,
@@ -215,5 +224,20 @@ async function handleEditMatch(match) {
     switchTab('reg');
   } catch (e) {
     alert('No se pudo deshacer la partida. Comprueba tu conexión e inténtalo de nuevo.');
+  }
+}
+
+// Borra la última partida sin volver a introducirla (p.ej. se metió por duplicado
+// o no debería haberse apuntado).
+async function handleDeleteMatch(match) {
+  if (!confirm('¿Borrar esta partida? Se revertirá el ELO de los 4 jugadores y no se puede deshacer.')) {
+    return;
+  }
+  try {
+    await revertMatchEffects(match);
+    closePlayerModal();
+    loadTab(activeTab());
+  } catch (e) {
+    alert('No se pudo borrar la partida. Comprueba tu conexión e inténtalo de nuevo.');
   }
 }
