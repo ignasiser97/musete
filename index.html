@@ -4,27 +4,37 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Musete</title>
-<meta name="theme-color" content="#12100e">
+<meta name="theme-color" content="#14100d">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #12100e;
-  --surface: #1c1815;
-  --card: #24201c;
-  --border: #3a332c;
-  --text: #f2ede6;
-  --text-dim: #a89f92;
+  --bg: #14100d;
+  --surface: #1e1913;
+  --card: #26201a;
+  --border: #3d3427;
+  --text: #f5efe4;
+  --text-dim: #b3a795;
   --accent: #c0392b;
+  --accent-2: #e0a731;
   --pos: #4caf50;
-  --neg: #e05d44;
+  --neg: #e0574a;
+  --gold: #e6b325;
+  --silver: #c7ccd6;
+  --bronze: #cd7f32;
+  --shadow: rgba(0,0,0,0.35);
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 22px 22px;
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   padding-bottom: calc(64px + env(safe-area-inset-bottom));
@@ -36,10 +46,37 @@ body {
   padding: clamp(12px, 4vw, 24px);
 }
 
-h1 { font-size: clamp(1.4rem, 5vw, 2rem); margin: 0 0 12px; }
-h2 { font-size: clamp(1.1rem, 4vw, 1.4rem); margin: 0 0 12px; }
+h1 {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  margin: 4px 0 16px;
+}
+h2 {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  font-size: clamp(1rem, 4vw, 1.2rem);
+  margin: 22px 0 12px;
+  position: relative;
+  padding-left: 14px;
+}
+h2::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 5px; height: 70%;
+  background: linear-gradient(var(--accent), var(--accent-2));
+  border-radius: 3px;
+}
 
 .hidden { display: none !important; }
+
+.tab-panel { animation: tabFadeIn 0.25s ease; }
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
 
 .hint { color: var(--text-dim); font-size: 0.9rem; }
 .error { color: var(--neg); font-size: 0.9rem; }
@@ -65,23 +102,59 @@ h2 { font-size: clamp(1.1rem, 4vw, 1.4rem); margin: 0 0 12px; }
 .link-btn { background: none; border: none; color: var(--accent); text-decoration: underline; padding: 0; font-size: 0.9rem; }
 
 /* --- Home --- */
-.leader-headline { font-size: 1.2rem; font-weight: 600; margin: 8px 0 16px; }
+.hero { text-align: center; padding: 10px 0 6px; }
+.hero-suits { font-size: 1.3rem; letter-spacing: 12px; margin-bottom: 2px; }
+.hero-suits .suit-black { color: var(--text-dim); }
+.hero-suits .suit-red { color: var(--accent); }
+.hero-title {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.1rem, 11vw, 3rem);
+  margin: 2px 0 4px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-tagline {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 18px;
+}
+.leader-headline {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 8px 0 16px;
+  text-align: center;
+}
 .quick-actions { display: flex; gap: 10px; margin-bottom: 20px; }
 .feed-row {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 12px;
   margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+  box-shadow: 0 2px 8px var(--shadow);
 }
 .feed-teams { display: flex; gap: 6px; flex-wrap: wrap; font-size: 0.9rem; }
 .feed-vs { color: var(--text-dim); }
 .feed-winner { font-weight: 700; color: var(--pos); }
-.feed-delta { color: var(--text-dim); font-size: 0.8rem; white-space: nowrap; }
+.feed-delta {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 8px;
+}
 
 /* --- Info ELO --- */
 .elo-info {
@@ -123,15 +196,34 @@ h2 { font-size: clamp(1.1rem, 4vw, 1.4rem); margin: 0 0 12px; }
 /* --- Clasificación --- */
 .lb-row {
   display: grid;
-  grid-template-columns: 28px 1fr 60px 70px 20px;
+  grid-template-columns: 34px 1fr 62px 74px 22px;
   align-items: center;
   gap: 8px;
-  padding: 10px 8px;
-  border-bottom: 1px solid var(--border);
+  padding: 12px 10px;
+  margin-bottom: 7px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid transparent;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: transform 0.15s ease;
 }
-.lb-pos { color: var(--text-dim); }
+.lb-row:hover { transform: translateX(3px); }
+.lb-row.rank-1 {
+  border-left-color: var(--gold);
+  background: linear-gradient(90deg, rgba(230,179,37,0.14), var(--card) 55%);
+}
+.lb-row.rank-2 {
+  border-left-color: var(--silver);
+  background: linear-gradient(90deg, rgba(199,204,214,0.10), var(--card) 55%);
+}
+.lb-row.rank-3 {
+  border-left-color: var(--bronze);
+  background: linear-gradient(90deg, rgba(205,127,50,0.12), var(--card) 55%);
+}
+.lb-pos { color: var(--text-dim); font-weight: 700; text-align: center; font-size: 1rem; }
 .lb-name { font-weight: 600; }
-.lb-elo { text-align: right; }
+.lb-elo { text-align: right; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 1.05rem; }
 .lb-record { text-align: right; color: var(--text-dim); font-size: 0.85rem; }
 .trend-up { color: var(--pos); }
 .trend-down { color: var(--neg); }
@@ -140,15 +232,20 @@ h2 { font-size: clamp(1.1rem, 4vw, 1.4rem); margin: 0 0 12px; }
 .player-row {
   display: flex;
   justify-content: space-between;
-  padding: 10px 8px;
-  border-bottom: 1px solid var(--border);
+  align-items: center;
+  padding: 12px 14px;
+  margin-bottom: 7px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px var(--shadow);
 }
 .player-meta { color: var(--text-dim); font-size: 0.85rem; }
 .add-form { display: flex; gap: 8px; margin-top: 16px; }
 .add-form input { flex: 1; }
 
 /* --- Formularios --- */
-input, select {
+input:not([type="checkbox"]), select {
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--text);
@@ -176,14 +273,21 @@ button {
 }
 .btn-primary, .btn-secondary {
   border: none;
-  border-radius: 8px;
-  padding: 12px 18px;
+  border-radius: 12px;
+  padding: 13px 20px;
   font-size: 1rem;
   font-weight: 600;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
 }
-.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #9c2d20);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(192,57,43,0.35);
+}
+.btn-primary:active { transform: scale(0.97); box-shadow: 0 2px 6px rgba(192,57,43,0.3); }
 .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-.btn-primary:disabled { opacity: 0.6; }
+.btn-secondary:active { transform: scale(0.97); }
+.btn-primary:disabled { opacity: 0.6; box-shadow: none; }
 
 /* --- Emparejar --- */
 .checklist { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
@@ -196,26 +300,47 @@ button {
   display: flex;
   align-items: center;
   gap: 6px;
+  transition: border-color 0.15s ease;
 }
+.checklist-item:has(input:checked) { border-color: var(--accent); }
+.checklist-item input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; }
 .mode-selector { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .mode-selector button {
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--text);
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 12px 14px;
   text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: border-color 0.15s ease, transform 0.1s ease;
 }
+.mode-selector button:active { transform: scale(0.98); }
+.mode-selector button.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.mode-icon { font-size: 1.4rem; line-height: 1; }
 .mode-selector button strong { display: block; }
 .mode-selector button small { color: var(--text-dim); }
 .table-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+.table-card-title {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  padding: 3px 11px;
+  border-radius: 999px;
   margin-bottom: 8px;
 }
-.table-card-title { color: var(--text-dim); font-size: 0.8rem; margin-bottom: 6px; }
 .table-card-teams { display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
 .table-vs { color: var(--text-dim); font-weight: 400; }
 .sitouts { color: var(--text-dim); font-size: 0.9rem; margin: 10px 0; }
@@ -239,20 +364,21 @@ button {
   position: fixed;
   bottom: calc(64px + env(safe-area-inset-bottom) + 10px);
   left: 12px; right: 12px;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: #fff;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: 0 4px 16px var(--shadow);
   z-index: 30;
 }
 #update-banner button {
   background: #fff;
   color: var(--accent);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 6px 12px;
   font-weight: 600;
 }
@@ -272,15 +398,21 @@ button {
   background: none;
   border: none;
   color: var(--text-dim);
-  padding: 10px 4px 8px;
-  font-size: 0.7rem;
+  padding: 8px 4px;
+  font-size: 0.68rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
 }
-.tab-btn.active { color: var(--accent); }
-.tab-icon { font-size: 1.2rem; }
+.tab-btn.active { color: var(--accent); font-weight: 600; }
+.tab-icon {
+  font-size: 1.15rem;
+  padding: 3px 12px;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+.tab-btn.active .tab-icon { background: rgba(192,57,43,0.15); }
 </style>
 </head>
 <body>
@@ -290,7 +422,13 @@ button {
 <div class="wrap">
 
   <div id="ini-tab" class="tab-panel">
-    <h1>Musete</h1>
+    <div class="hero">
+      <div class="hero-suits">
+        <span class="suit-black">♠</span><span class="suit-red">♥</span><span class="suit-red">♦</span><span class="suit-black">♣</span>
+      </div>
+      <h1 class="hero-title">Musete</h1>
+      <p class="hero-tagline">Ranking ELO de la peña</p>
+    </div>
     <div id="identity-banner"></div>
     <p id="ini-leader" class="leader-headline"></p>
     <div class="quick-actions">
@@ -370,12 +508,12 @@ button {
   </div>
 
   <div id="cla-tab" class="tab-panel hidden">
-    <h1>Clasificación</h1>
+    <h1>🏆 Clasificación</h1>
     <div id="cla-list"></div>
   </div>
 
   <div id="jug-tab" class="tab-panel hidden">
-    <h1>Jugadores</h1>
+    <h1>👥 Jugadores</h1>
     <div id="jug-list"></div>
     <form id="jug-add-form" class="add-form" onsubmit="handleAddPlayer(event)">
       <input id="jug-new-name" type="text" placeholder="Nombre del jugador" required maxlength="40">
@@ -385,7 +523,7 @@ button {
   </div>
 
   <div id="reg-tab" class="tab-panel hidden">
-    <h1>Registrar partida</h1>
+    <h1>📝 Registrar partida</h1>
     <form id="reg-form" onsubmit="handleSubmitMatch(event)">
       <div class="team-block">
         <h3>Equipo A</h3>
@@ -407,7 +545,7 @@ button {
   </div>
 
   <div id="his-tab" class="tab-panel hidden">
-    <h1>Historial</h1>
+    <h1>📜 Historial</h1>
     <div class="field">
       <label>Filtrar por jugador</label>
       <select id="his-filter" onchange="handleHistoryFilterChange()"></select>
@@ -417,22 +555,22 @@ button {
   </div>
 
   <div id="emp-tab" class="tab-panel hidden">
-    <h1>Emparejar</h1>
+    <h1>🔀 Emparejar</h1>
     <h2>¿Quién está presente?</h2>
     <div id="emp-checklist" class="checklist"></div>
     <h2>Modo</h2>
     <div class="mode-selector">
-      <button type="button" onclick="handleGeneratePairings('random')">
-        <strong>Aleatorio puro</strong>
-        <small>Sortea sin memoria de rondas anteriores.</small>
+      <button type="button" data-mode="random" onclick="handleGeneratePairings('random')">
+        <span class="mode-icon">🎲</span>
+        <span><strong>Aleatorio puro</strong><small>Sortea sin memoria de rondas anteriores.</small></span>
       </button>
-      <button type="button" onclick="handleGeneratePairings('no-repeat')">
-        <strong>Sin repetir</strong>
-        <small>Evita repetir compañero/rival de esta semana.</small>
+      <button type="button" data-mode="no-repeat" onclick="handleGeneratePairings('no-repeat')">
+        <span class="mode-icon">🔁</span>
+        <span><strong>Sin repetir</strong><small>Evita repetir compañero/rival de esta semana.</small></span>
       </button>
-      <button type="button" onclick="handleGeneratePairings('elo-balanced')">
-        <strong>Equilibrado por ELO</strong>
-        <small>Forma mesas de nivel parejo.</small>
+      <button type="button" data-mode="elo-balanced" onclick="handleGeneratePairings('elo-balanced')">
+        <span class="mode-icon">⚖️</span>
+        <span><strong>Equilibrado por ELO</strong><small>Forma mesas de nivel parejo.</small></span>
       </button>
     </div>
     <p id="emp-error" class="error"></p>

@@ -141,11 +141,12 @@ function buildMatchRowElement(m) {
   row.className = 'feed-row';
   const teamA = `${m.team_a_player1_name?.name ?? '?'} / ${m.team_a_player2_name?.name ?? '?'}`;
   const teamB = `${m.team_b_player1_name?.name ?? '?'} / ${m.team_b_player2_name?.name ?? '?'}`;
+  const aWon = m.score_a > m.score_b;
   row.innerHTML = `
     <div class="feed-teams">
-      <span class="${m.score_a > m.score_b ? 'feed-winner' : ''}">${escHtml(teamA)} ${m.score_a}</span>
+      <span class="${aWon ? 'feed-winner' : ''}">${aWon ? '🏆 ' : ''}${escHtml(teamA)} ${m.score_a}</span>
       <span class="feed-vs">–</span>
-      <span class="${m.score_b > m.score_a ? 'feed-winner' : ''}">${m.score_b} ${escHtml(teamB)}</span>
+      <span class="${!aWon ? 'feed-winner' : ''}">${m.score_b} ${escHtml(teamB)}${!aWon ? ' 🏆' : ''}</span>
     </div>
     <div class="feed-delta">±${m.elo_delta} ELO</div>`;
   return row;

@@ -47,6 +47,8 @@ function shuffle(array) {
 
 async function handleGeneratePairings(mode) {
   LAST_PAIRING_MODE = mode;
+  document.querySelectorAll('.mode-selector button').forEach(btn =>
+    btn.classList.toggle('selected', btn.dataset.mode === mode));
   const errorEl = document.getElementById('emp-error');
   errorEl.textContent = '';
 

@@ -1,6 +1,7 @@
 // Pestaña Clasificación: ranking completo ordenado por ELO.
 
 let PREV_RANK = {}; // id -> puesto anterior, para la flecha ▲/▼ dentro de la misma sesión
+const RANK_MEDALS = ['🥇', '🥈', '🥉'];
 
 async function loadLeaderboardTab() {
   const wrap = document.getElementById('cla-list');
@@ -28,11 +29,11 @@ function renderLeaderboard(players) {
     nextRank[p.id] = rank;
 
     const row = document.createElement('div');
-    row.className = 'lb-row';
+    row.className = 'lb-row' + (rank <= 3 ? ` rank-${rank}` : '');
 
     const posEl = document.createElement('span');
     posEl.className = 'lb-pos';
-    posEl.textContent = rank;
+    posEl.textContent = rank <= 3 ? RANK_MEDALS[rank - 1] : rank;
 
     const nameEl = document.createElement('span');
     nameEl.className = 'lb-name';
