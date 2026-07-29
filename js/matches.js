@@ -61,6 +61,27 @@ function validateMatchForm(a1, a2, b1, b2, scoreA, scoreB) {
   return null;
 }
 
+function sameTeam(a, b) {
+  return a.length === b.length && a.every(x => b.includes(x));
+}
+
+// Compara contra la última partida registrada (mismos 4 jugadores, sin importar
+// en qué equipo, y mismo marcador). Pensada para pillar el caso de que dos personas
+// registren el mismo resultado casi a la vez sin saberlo — no bloquea, solo avisa.
+function isDuplicateOfLast(lastMatch, a1, a2, b1, b2, scoreA, scoreB) {
+  if (!lastMatch) return false;
+  const newA = [a1, a2], newB = [b1, b2];
+  const lastA = [lastMatch.team_a_player1, lastMatch.team_a_player2];
+  const lastB = [lastMatch.team_b_player1, lastMatch.team_b_player2];
+
+  const sameOrientation = sameTeam(newA, lastA) && sameTeam(newB, lastB)
+    && scoreA === lastMatch.score_a && scoreB === lastMatch.score_b;
+  const swappedOrientation = sameTeam(newA, lastB) && sameTeam(newB, lastA)
+    && scoreA === lastMatch.score_b && scoreB === lastMatch.score_a;
+
+  return sameOrientation || swappedOrientation;
+}
+
 async function handleSubmitMatch(event) {
   event.preventDefault();
   const errorEl = document.getElementById('reg-error');
@@ -78,6 +99,16 @@ async function handleSubmitMatch(event) {
   if (validationError) {
     errorEl.textContent = validationError;
     return;
+  }
+
+  try {
+    const [lastMatch] = await fetchRecentMatches(1);
+    if (isDuplicateOfLast(lastMatch, a1, a2, b1, b2, scoreA, scoreB)) {
+      const confirmed = confirm('Este resultado es igual al último partido registrado (mismos jugadores y marcador). ¿Seguro que no es un duplicado?');
+      if (!confirmed) return;
+    }
+  } catch (e) {
+    // Si falla la comprobación (p.ej. sin conexión), no bloqueamos el registro por esto.
   }
 
   const byId = id => PLAYERS.find(p => p.id === id);

@@ -150,6 +150,8 @@ Ejemplos verificados (ver comentario al final de `elo.js`):
 
 **Nota de integridad**: la actualización no es transaccional (no hay RPC de Postgres) — es un cálculo en cliente seguido de varios `insert`/`update` secuenciales a Supabase. Riesgo de condición de carrera si dos personas envían resultados simultáneamente: bajo dado el contexto (amigos turnándose para apuntar), aceptado para el MVP. Posible mejora futura: función `record_match()` en Postgres llamada vía `supabase.rpc()` envolviendo todo en una transacción.
 
+**Aviso de posible duplicado**: antes de insertar, `handleSubmitMatch` compara contra la última partida registrada (`isDuplicateOfLast` en `matches.js`) — mismos 4 jugadores (da igual el orden o qué equipo es A/B) y mismo marcador (incluyendo el caso de equipos intercambiados con marcador espejado). Si coincide, salta un `confirm()` antes de seguir. Pensado para el caso típico de que dos personas apunten el mismo resultado casi a la vez sin saberlo; no bloquea el envío, solo avisa, y si la comprobación falla (p.ej. sin conexión) se deja pasar sin más.
+
 ## Emparejamientos — algoritmos
 
 `js/pairings.js`. Dado el conjunto de presentes (`N`): `sitOutCount = N % 4`, `tableCount = floor(N/4)`. Si `N < 4`, se avisa y no se genera nada.
