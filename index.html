@@ -147,6 +147,8 @@ h2::before {
   gap: 10px;
   box-shadow: 0 2px 8px var(--shadow);
 }
+.feed-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.feed-time { color: var(--text-dim); font-size: 0.72rem; }
 .feed-teams { display: flex; gap: 6px; flex-wrap: wrap; font-size: 0.9rem; }
 .feed-vs { color: var(--text-dim); }
 .feed-winner { font-weight: 700; color: var(--pos); }
@@ -686,6 +688,7 @@ button {
         <div class="field"><label>Sets ganados A</label><input id="reg-score-a" type="number" min="0" required></div>
         <div class="field"><label>Sets ganados B</label><input id="reg-score-b" type="number" min="0" required></div>
       </div>
+      <div class="field"><label>Hora de la partida</label><input id="reg-played-at" type="datetime-local" required></div>
       <p id="reg-error" class="error"></p>
       <button id="reg-submit" type="submit" class="btn-primary">Guardar resultado</button>
     </form>

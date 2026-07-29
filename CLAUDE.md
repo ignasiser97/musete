@@ -39,9 +39,10 @@ Orden de `<script>` en `index.html` es significativo: cada archivo define funcio
 
 - `players.matches_played` es un contador denormalizado = `wins + losses`, mantenido a mano en cada `updatePlayer()` (no hay trigger en BD).
 - `matches.score_a`/`score_b` son **sets ganados** por cada equipo, no puntos/piedras — el formato de la partida (al mejor de 3, de 5, u otro) puede variar de una ronda a otra, la app no lo fuerza.
+- `matches.played_at` es la hora **de la partida** (editable en el formulario de Registrar, por defecto "ahora" pero se puede corregir si se apunta más tarde); `matches.created_at` sigue siendo la hora en la que se **insertó** la fila, y es la que se usa para ordenar Inicio/Historial/modal de jugador y para decidir cuál es "la partida más reciente" a efectos de Editar/Borrar (ver más abajo). `played_at` solo se **muestra** en la fila, no reordena nada — si se cambia manualmente a una hora anterior a la real de inserción, la fila seguirá apareciendo en su sitio por orden de registro, no por la hora que se le haya puesto.
 - `matches.score_a != score_b` siempre — el mus no tiene empates, se valida en el formulario (`validateMatchForm` en `matches.js`).
 - `elo_history` guarda `elo_before`/`elo_after`/`delta` por jugador y partida. Alimenta dos cosas: la gráfica de evolución de ELO del modal de detalle de jugador (`playerdetail.js`), y los botones "✏️ Editar"/"🗑️ Borrar" de `matches.js`.
-- **Editar/borrar partida**: solo está disponible en la **partida más reciente de toda la app** (los botones ✏️/🗑️ solo aparecen en esa fila, en Inicio/Historial/modal de jugador). Ambos comparten `revertMatchEffects()`: revierte el `elo`/`wins`/`losses`/`matches_played` de los 4 jugadores a partir de sus filas de `elo_history` (usa `elo_before` directamente, no resta el `delta` a mano) y borra la fila de `matches` (cascade sobre sus 4 filas de `elo_history`). "Editar" además precarga el formulario de Registrar con los mismos jugadores/marcador para corregirlo rápido; "Borrar" simplemente refresca la pestaña actual. Deliberadamente **no** se permite tocar partidas antiguas: hacerlo bien exigiría recalcular en cadena el ELO de todas las partidas posteriores de esos 4 jugadores, lo cual no está implementado.
+- **Editar/borrar partida**: solo está disponible en la **partida más reciente de toda la app por orden de inserción** (`created_at`, no `played_at` — los botones ✏️/🗑️ solo aparecen en esa fila, en Inicio/Historial/modal de jugador). Ambos comparten `revertMatchEffects()`: revierte el `elo`/`wins`/`losses`/`matches_played` de los 4 jugadores a partir de sus filas de `elo_history` (usa `elo_before` directamente, no resta el `delta` a mano) y borra la fila de `matches` (cascade sobre sus 4 filas de `elo_history`). "Editar" además precarga el formulario de Registrar con los mismos jugadores/marcador para corregirlo rápido; "Borrar" simplemente refresca la pestaña actual. Deliberadamente **no** se permite tocar partidas antiguas: hacerlo bien exigiría recalcular en cadena el ELO de todas las partidas posteriores de esos 4 jugadores, lo cual no está implementado.
 - `matches.recorded_by` siempre se inserta a `null` — no hay mecanismo de identidad de usuario en la app (se quitó por no aportar nada: nadie consultaba quién había apuntado cada partida). La columna se deja en el esquema por si se retoma en el futuro.
 - `players.avatar_url` (nullable) — foto de perfil opcional, ver sección "Storage — fotos de perfil" más abajo.
 
@@ -64,6 +65,7 @@ create table players (
 create table matches (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
+  played_at timestamptz not null default now(),
   team_a_player1 uuid not null references players(id),
   team_a_player2 uuid not null references players(id),
   team_b_player1 uuid not null references players(id),
@@ -86,6 +88,12 @@ create table elo_history (
 ```
 
 `js/supabase.js` hace joins nombrados sobre los FK autogenerados (`matches_team_a_player1_fkey`, etc.) — si se recrean las tablas a mano, confirmar que Postgres genera esos mismos nombres de constraint (es el comportamiento por defecto al usar `references` inline).
+
+Si el proyecto ya existía antes de añadir `played_at`/`avatar_url`, faltan por aplicar:
+```sql
+alter table matches add column played_at timestamptz not null default now();
+alter table players add column avatar_url text;
+```
 
 **RLS** (configurar manualmente en el dashboard tras crear las tablas, no versionado en el repo):
 - Rol `anon`: `SELECT` en `players`, `matches`, `elo_history`.

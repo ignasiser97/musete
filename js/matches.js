@@ -3,10 +3,19 @@
 
 let PENDING_EDIT_MATCH = null; // datos a preprellenar tras "Editar" en la última partida
 
+// Convierte un Date/ISO string al formato que espera <input type="datetime-local">,
+// respetando la hora local (toISOString() por sí solo da UTC).
+function toDatetimeLocalValue(date) {
+  const d = new Date(date);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+}
+
 async function loadRegisterTab() {
   await ensurePlayersLoadedForForm();
   populateMatchFormSelects();
   document.getElementById('reg-error').textContent = '';
+  document.getElementById('reg-played-at').value = toDatetimeLocalValue(new Date());
 
   if (PENDING_EDIT_MATCH) {
     document.getElementById('reg-a1').value = PENDING_EDIT_MATCH.a1;
@@ -15,6 +24,7 @@ async function loadRegisterTab() {
     document.getElementById('reg-b2').value = PENDING_EDIT_MATCH.b2;
     document.getElementById('reg-score-a').value = PENDING_EDIT_MATCH.scoreA;
     document.getElementById('reg-score-b').value = PENDING_EDIT_MATCH.scoreB;
+    document.getElementById('reg-played-at').value = toDatetimeLocalValue(PENDING_EDIT_MATCH.playedAt);
     document.getElementById('reg-error').textContent = 'Corrige el resultado y vuelve a guardarlo.';
     PENDING_EDIT_MATCH = null;
   }
@@ -62,6 +72,7 @@ async function handleSubmitMatch(event) {
   const b2 = document.getElementById('reg-b2').value;
   const scoreA = parseInt(document.getElementById('reg-score-a').value, 10);
   const scoreB = parseInt(document.getElementById('reg-score-b').value, 10);
+  const playedAtInput = document.getElementById('reg-played-at').value;
 
   const validationError = validateMatchForm(a1, a2, b1, b2, scoreA, scoreB);
   if (validationError) {
@@ -92,6 +103,7 @@ async function handleSubmitMatch(event) {
       score_a: scoreA, score_b: scoreB,
       elo_delta: delta,
       recorded_by: null,
+      played_at: playedAtInput ? new Date(playedAtInput).toISOString() : new Date().toISOString(),
     });
 
     for (const [id, info] of Object.entries(updated)) {
@@ -113,6 +125,7 @@ async function handleSubmitMatch(event) {
     })));
 
     document.getElementById('reg-form').reset();
+    document.getElementById('reg-played-at').value = toDatetimeLocalValue(new Date());
     PLAYERS = await fetchPlayers();
     populateMatchFormSelects();
     errorEl.textContent = '';
@@ -152,6 +165,14 @@ function renderRecentMatchesFeed(matches) {
 // isLatest: solo la partida más reciente de toda la app puede "editarse" — deshacer
 // cualquier otra partida requeriría recalcular el ELO de todas las posteriores, lo
 // cual no está implementado (ver CLAUDE.md).
+function formatMatchDateTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const day = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+  const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  return `${day} · ${time}`;
+}
+
 function buildMatchRowElement(m, isLatest = false) {
   const row = document.createElement('div');
   row.className = 'feed-row';
@@ -159,10 +180,13 @@ function buildMatchRowElement(m, isLatest = false) {
   const teamB = `${m.team_b_player1_name?.name ?? '?'} / ${m.team_b_player2_name?.name ?? '?'}`;
   const aWon = m.score_a > m.score_b;
   row.innerHTML = `
-    <div class="feed-teams">
-      <span class="${aWon ? 'feed-winner' : ''}">${aWon ? '🏆 ' : ''}${escHtml(teamA)} ${m.score_a}</span>
-      <span class="feed-vs">–</span>
-      <span class="${!aWon ? 'feed-winner' : ''}">${m.score_b} ${escHtml(teamB)}${!aWon ? ' 🏆' : ''}</span>
+    <div class="feed-main">
+      <div class="feed-time">${formatMatchDateTime(m.played_at)}</div>
+      <div class="feed-teams">
+        <span class="${aWon ? 'feed-winner' : ''}">${aWon ? '🏆 ' : ''}${escHtml(teamA)} ${m.score_a}</span>
+        <span class="feed-vs">–</span>
+        <span class="${!aWon ? 'feed-winner' : ''}">${m.score_b} ${escHtml(teamB)}${!aWon ? ' 🏆' : ''}</span>
+      </div>
     </div>
     <div class="feed-side">
       <div class="feed-delta">±${m.elo_delta} ELO</div>
@@ -219,6 +243,7 @@ async function handleEditMatch(match) {
       a1: match.team_a_player1, a2: match.team_a_player2,
       b1: match.team_b_player1, b2: match.team_b_player2,
       scoreA: match.score_a, scoreB: match.score_b,
+      playedAt: match.played_at,
     };
     closePlayerModal();
     switchTab('reg');
