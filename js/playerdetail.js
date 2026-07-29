@@ -258,35 +258,67 @@ function renderCuriosities(stats) {
 }
 
 function buildEloChart(history) {
-  const W = 300, H = 120, PAD = 10;
+  const W = 320, H = 170;
+  const marginLeft = 34, marginRight = 10, marginTop = 16, marginBottom = 10;
+  const plotW = W - marginLeft - marginRight;
+  const plotH = H - marginTop - marginBottom;
+
   const values = [history[0].elo_before, ...history.map(h => h.elo_after)];
   const min = Math.min(...values), max = Math.max(...values);
   const range = Math.max(1, max - min);
 
-  const coords = values.map((elo, i) => {
-    const x = PAD + (i / (values.length - 1 || 1)) * (W - PAD * 2);
-    const y = H - PAD - ((elo - min) / range) * (H - PAD * 2);
-    return [x, y];
-  });
+  const xFor = i => marginLeft + (i / (values.length - 1 || 1)) * plotW;
+  const yFor = v => marginTop + plotH - ((v - min) / range) * plotH;
+  const coords = values.map((v, i) => [xFor(i), yFor(v)]);
 
   const linePath = coords.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
-  const lastX = coords[coords.length - 1][0].toFixed(1);
-  const firstX = coords[0][0].toFixed(1);
-  const areaPath = `${linePath} L${lastX},${H - PAD} L${firstX},${H - PAD} Z`;
+  const lastPoint = coords[coords.length - 1];
+  const areaPath = `${linePath} L${lastPoint[0].toFixed(1)},${(marginTop + plotH).toFixed(1)} L${coords[0][0].toFixed(1)},${(marginTop + plotH).toFixed(1)} Z`;
+
+  // 4 líneas de referencia (incluye min y max exactos en los extremos).
+  const tickCount = 4;
+  const gridLines = Array.from({ length: tickCount }, (_, i) => {
+    const value = Math.round(min + (range * i) / (tickCount - 1));
+    const y = yFor(value);
+    return `
+      <line x1="${marginLeft}" y1="${y.toFixed(1)}" x2="${W - marginRight}" y2="${y.toFixed(1)}" class="chart-grid"/>
+      <text x="${marginLeft - 6}" y="${(y + 3).toFixed(1)}" class="chart-tick" text-anchor="end">${value}</text>`;
+  }).join('');
+
+  // Un punto por partida; el inicial y el actual muestran su valor siempre,
+  // el resto se revela al tocarlo (para no saturar el gráfico de números).
+  const lastIdx = coords.length - 1;
+  const points = coords.map(([x, y], i) => {
+    const isEndpoint = i === 0 || i === lastIdx;
+    const anchor = i === 0 ? 'start' : i === lastIdx ? 'end' : 'middle';
+    return `
+      <g class="chart-point">
+        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" class="chart-dot-hit"/>
+        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" class="chart-dot"/>
+        <text x="${x.toFixed(1)}" y="${(y - 9).toFixed(1)}" text-anchor="${anchor}" class="chart-point-label${isEndpoint ? '' : ' hidden'}">${values[i]}</text>
+      </g>`;
+  }).join('');
 
   const wrap = document.createElement('div');
   wrap.className = 'elo-chart';
   wrap.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <svg viewBox="0 0 ${W} ${H}">
       <defs>
         <linearGradient id="eloChartFill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" style="stop-color:var(--accent); stop-opacity:0.35"/>
           <stop offset="100%" style="stop-color:var(--accent); stop-opacity:0"/>
         </linearGradient>
       </defs>
+      ${gridLines}
       <path d="${areaPath}" style="fill:url(#eloChartFill); stroke:none"/>
       <path d="${linePath}" style="fill:none; stroke:var(--accent); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round"/>
+      ${points}
     </svg>
-    <div class="elo-chart-range"><span>${min}</span><span>${max}</span></div>`;
+    <p class="hint elo-chart-hint">Toca un punto para ver su valor</p>`;
+
+  wrap.querySelectorAll('.chart-point').forEach(g => {
+    g.addEventListener('click', () => g.querySelector('.chart-point-label').classList.toggle('hidden'));
+  });
+
   return wrap;
 }
