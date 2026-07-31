@@ -41,6 +41,8 @@ function renderPlayerDetail(player, history, matches, latestId) {
   eloNow.textContent = `ELO actual: ${player.elo} · ${player.wins}V-${player.losses}D`;
   body.appendChild(eloNow);
 
+  body.appendChild(buildDeletePlayerButton(player));
+
   if (history.length === 0) {
     const p = document.createElement('p');
     p.className = 'hint';
@@ -100,6 +102,37 @@ async function savePlayerName(player, header, newName) {
     renderPlayersList();
   } catch (e) {
     alert('No se pudo guardar el nombre. Inténtalo de nuevo.');
+  }
+}
+
+// --- Borrar jugador (solo si no ha jugado ninguna partida) ---
+
+function buildDeletePlayerButton(player) {
+  const wrap = document.createElement('p');
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'danger-link';
+  btn.textContent = '🗑️ Borrar jugador';
+  btn.addEventListener('click', () => handleDeletePlayer(player));
+  wrap.appendChild(btn);
+  return wrap;
+}
+
+async function handleDeletePlayer(player) {
+  if (player.matches_played > 0) {
+    alert(`No se puede borrar a ${player.name}: ya tiene ${player.matches_played} partida${player.matches_played === 1 ? '' : 's'} jugada${player.matches_played === 1 ? '' : 's'}. Borrar un jugador con historial rompería los resultados de sus rivales/compañeros.`);
+    return;
+  }
+  if (!confirm(`¿Borrar a ${player.name}? Todavía no ha jugado ninguna partida, así que no afecta a nadie más.`)) return;
+  try {
+    await deletePlayer(player.id);
+    const idx = PLAYERS.findIndex(p => p.id === player.id);
+    if (idx !== -1) PLAYERS.splice(idx, 1);
+    closePlayerModal();
+    renderPlayersList();
+    loadTab(activeTab());
+  } catch (e) {
+    alert('No se pudo borrar el jugador. Comprueba tu conexión e inténtalo de nuevo.');
   }
 }
 

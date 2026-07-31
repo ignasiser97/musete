@@ -45,6 +45,7 @@ Orden de `<script>` en `index.html` es significativo: cada archivo define funcio
 - **Editar/borrar partida**: solo está disponible en la **partida más reciente de toda la app por orden de inserción** (`created_at`, no `played_at` — los botones ✏️/🗑️ solo aparecen en esa fila, en Inicio/Historial/modal de jugador). Ambos comparten `revertMatchEffects()`: revierte el `elo`/`wins`/`losses`/`matches_played` de los 4 jugadores a partir de sus filas de `elo_history` (usa `elo_before` directamente, no resta el `delta` a mano) y borra la fila de `matches` (cascade sobre sus 4 filas de `elo_history`). "Editar" además precarga el formulario de Registrar con los mismos jugadores/marcador para corregirlo rápido; "Borrar" simplemente refresca la pestaña actual. Deliberadamente **no** se permite tocar partidas antiguas: hacerlo bien exigiría recalcular en cadena el ELO de todas las partidas posteriores de esos 4 jugadores, lo cual no está implementado.
 - `matches.recorded_by` siempre se inserta a `null` — no hay mecanismo de identidad de usuario en la app (se quitó por no aportar nada: nadie consultaba quién había apuntado cada partida). La columna se deja en el esquema por si se retoma en el futuro.
 - `players.avatar_url` (nullable) — foto de perfil opcional, ver sección "Storage — fotos de perfil" más abajo.
+- **Borrar jugador**: solo se permite si `matches_played === 0` (`handleDeletePlayer` en `playerdetail.js`, botón "🗑️ Borrar jugador" en el modal). Con partidas jugadas de por medio no se permite: habría que borrar también sus filas de `matches`, lo que arrastraría el historial de sus compañeros/rivales — no implementado a propósito, mismo criterio que no permitir editar partidas antiguas.
 
 ## Backend — Supabase
 
@@ -99,10 +100,12 @@ alter table players add column avatar_url text;
 - Rol `anon`: `SELECT` en `players`, `matches`, `elo_history`.
 - Rol `anon`: `INSERT`/`UPDATE` en `players`, `matches`, `elo_history`.
 - Rol `anon`: `DELETE` en `matches` — necesario para los botones "✏️ Editar"/"🗑️ Borrar" (`deleteMatch()` en `supabase.js`), que borran la última partida. En teoría no hace falta política de `DELETE` en `elo_history` (el `on delete cascade` de la FK debería aplicarse sin pasar por RLS de la tabla referenciada); si al probar esos botones da error de permisos en `elo_history`, añadir la misma política ahí también.
+- Rol `anon`: `DELETE` en `players` — necesario para "🗑️ Borrar jugador" en el modal de jugador (`deletePlayer()` en `supabase.js`).
 
 Ejemplo de política a añadir en el SQL editor si el proyecto ya existía sin ella:
 ```sql
 create policy "anon delete matches" on matches for delete to anon using (true);
+create policy "anon delete players" on players for delete to anon using (true);
 ```
 
 **Storage — fotos de perfil**: bucket `avatars` (público), usado por `uploadAvatar()`/`buildAvatarElement()` en `supabase.js`. Setup completo en el SQL editor:

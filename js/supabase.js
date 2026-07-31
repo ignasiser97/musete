@@ -105,6 +105,11 @@ async function deleteMatch(matchId) {
   if (error) throw error;
 }
 
+async function deletePlayer(playerId) {
+  const { error } = await db.from('players').delete().eq('id', playerId);
+  if (error) throw error;
+}
+
 // Sube (o sustituye) la foto de un jugador en el bucket "avatars" y devuelve su URL
 // pública. El nombre de fichero es el propio id del jugador (upsert), así que subir
 // una nueva siempre reemplaza a la anterior sin dejar huérfanas. El `?t=` al final
