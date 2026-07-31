@@ -101,7 +101,7 @@ async function savePlayerName(player, header, newName) {
     renderPlayerNameHeader(player, header);
     renderPlayersList();
   } catch (e) {
-    alert('No se pudo guardar el nombre. Inténtalo de nuevo.');
+    alert(e.code === '23505' ? 'Ya existe un jugador con ese nombre.' : 'No se pudo guardar el nombre. Inténtalo de nuevo.');
   }
 }
 
@@ -126,11 +126,8 @@ async function handleDeletePlayer(player) {
   if (!confirm(`¿Borrar a ${player.name}? Todavía no ha jugado ninguna partida, así que no afecta a nadie más.`)) return;
   try {
     await deletePlayer(player.id);
-    const idx = PLAYERS.findIndex(p => p.id === player.id);
-    if (idx !== -1) PLAYERS.splice(idx, 1);
     closePlayerModal();
-    renderPlayersList();
-    loadTab(activeTab());
+    loadTab(activeTab()); // siempre 'jug' (el modal solo se abre desde ahí) — refetch + re-render
   } catch (e) {
     alert('No se pudo borrar el jugador. Comprueba tu conexión e inténtalo de nuevo.');
   }
@@ -182,6 +179,10 @@ function resizeImageToBlob(file, size = 300) {
 
 async function handleAvatarUpload(player, file) {
   if (!file) return;
+  // Evita que parezca "colgado" en una subida lenta (foto de cámara + wifi de playa)
+  // y que un segundo tap mientras tanto dispare otra subida en paralelo.
+  const avatarEl = document.querySelector('#player-modal-body .avatar');
+  avatarEl?.classList.add('avatar-uploading');
   try {
     const blob = await resizeImageToBlob(file, 300);
     const url = await uploadAvatar(player.id, blob);
@@ -191,6 +192,8 @@ async function handleAvatarUpload(player, file) {
     openPlayerDetail(player);
   } catch (e) {
     alert('No se pudo subir la foto. Comprueba tu conexión e inténtalo de nuevo.');
+  } finally {
+    avatarEl?.classList.remove('avatar-uploading');
   }
 }
 

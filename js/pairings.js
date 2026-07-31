@@ -99,7 +99,10 @@ function pureRandomPairing(present) {
 // Selección de descansos "justa": primero quienes menos partidas llevan jugadas esta semana,
 // empates al azar. Usado por los modos 2 y 3 (a diferencia del modo 1, que descansa al azar).
 function selectFairSitOuts(present, count) {
-  if (count === 0) return { sitOuts: [], playing: present };
+  // shuffle() incluso con count=0: si no hace falta descansar a nadie, el orden de
+  // "playing" debe seguir siendo aleatorio (si no, con empates de ELO el modo
+  // "Equilibrado por ELO" daría siempre el mismo resultado al pulsar "Regenerar").
+  if (count === 0) return { sitOuts: [], playing: shuffle(present) };
   const sorted = shuffle(present).sort((a, b) => a.matches_played - b.matches_played);
   return { sitOuts: sorted.slice(0, count), playing: sorted.slice(count) };
 }

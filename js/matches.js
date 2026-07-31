@@ -102,17 +102,28 @@ async function handleSubmitMatch(event) {
   }
 
   try {
-    const [lastMatch] = await fetchRecentMatches(1);
-    if (isDuplicateOfLast(lastMatch, a1, a2, b1, b2, scoreA, scoreB)) {
+    // Refresca PLAYERS aquí (no solo al abrir la pestaña): si alguien más registró
+    // un resultado mientras este formulario estaba abierto, el ELO de los jugadores
+    // seleccionados podría estar desfasado. De paso, aprovechamos para el aviso de duplicado.
+    const [recentMatches, freshPlayers] = await Promise.all([
+      fetchRecentMatches(1),
+      fetchPlayers(),
+    ]);
+    PLAYERS = freshPlayers;
+    if (isDuplicateOfLast(recentMatches[0], a1, a2, b1, b2, scoreA, scoreB)) {
       const confirmed = confirm('Este resultado es igual al último partido registrado (mismos jugadores y marcador). ¿Seguro que no es un duplicado?');
       if (!confirmed) return;
     }
   } catch (e) {
-    // Si falla la comprobación (p.ej. sin conexión), no bloqueamos el registro por esto.
+    // Si falla la comprobación (p.ej. sin conexión), seguimos con los datos que ya teníamos.
   }
 
   const byId = id => PLAYERS.find(p => p.id === id);
   const pA1 = byId(a1), pA2 = byId(a2), pB1 = byId(b1), pB2 = byId(b2);
+  if (!pA1 || !pA2 || !pB1 || !pB2) {
+    errorEl.textContent = 'Alguno de los jugadores seleccionados ya no existe. Recarga la pestaña e inténtalo de nuevo.';
+    return;
+  }
 
   const submitBtn = document.getElementById('reg-submit');
   submitBtn.disabled = true;
@@ -192,10 +203,6 @@ function renderRecentMatchesFeed(matches) {
   matches.forEach((m, i) => feed.appendChild(buildMatchRowElement(m, i === 0)));
 }
 
-// Fila reutilizada por el feed de Inicio, el Historial completo y el modal de jugador.
-// isLatest: solo la partida más reciente de toda la app puede "editarse" — deshacer
-// cualquier otra partida requeriría recalcular el ELO de todas las posteriores, lo
-// cual no está implementado (ver CLAUDE.md).
 function formatMatchDateTime(iso) {
   if (!iso) return '';
   const d = new Date(iso);
@@ -204,6 +211,10 @@ function formatMatchDateTime(iso) {
   return `${day} · ${time}`;
 }
 
+// Fila reutilizada por el feed de Inicio, el Historial completo y el modal de jugador.
+// isLatest: solo la partida más reciente de toda la app puede "editarse" — deshacer
+// cualquier otra partida requeriría recalcular el ELO de todas las posteriores, lo
+// cual no está implementado (ver CLAUDE.md).
 function buildMatchRowElement(m, isLatest = false) {
   const row = document.createElement('div');
   row.className = 'feed-row';

@@ -1,4 +1,4 @@
-const VERSION = 'v16';
+const VERSION = 'v17';
 const CACHE   = 'musete-' + VERSION;
 
 const CORE = [

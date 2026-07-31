@@ -62,7 +62,12 @@ async function handleAddPlayer(event) {
     renderPlayersList();
     input.value = '';
   } catch (e) {
-    errorEl.textContent = 'No se pudo añadir el jugador. Inténtalo de nuevo.';
+    // 23505 = unique_violation en Postgres: alguien más añadió el mismo nombre casi
+    // a la vez (nuestra comprobación local con PLAYERS no lo pilló porque ese jugador
+    // todavía no estaba en el array cuando se hizo la comprobación).
+    errorEl.textContent = e.code === '23505'
+      ? 'Ya existe un jugador con ese nombre.'
+      : 'No se pudo añadir el jugador. Inténtalo de nuevo.';
   } finally {
     submitBtn.disabled = false;
   }
