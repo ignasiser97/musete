@@ -420,6 +420,56 @@ h2::before {
   font-size: 0.9rem;
 }
 
+/* --- Matriz de enfrentamientos --- */
+.modal-content h2:first-child { margin-top: 0; }
+.h2h-scroll {
+  overflow: auto;
+  max-height: 65vh;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 12px;
+}
+.h2h-table { border-collapse: separate; border-spacing: 0; font-size: 0.75rem; }
+.h2h-corner {
+  position: sticky;
+  top: 0; left: 0;
+  z-index: 3;
+  background: var(--surface);
+}
+.h2h-col-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+  padding: 6px 4px;
+  text-align: center;
+  color: var(--text-dim);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+.h2h-row-header {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+  padding: 6px 10px;
+  text-align: left;
+  white-space: nowrap;
+  font-weight: 600;
+  border-right: 1px solid var(--border);
+}
+.h2h-row-header { display: flex; align-items: center; gap: 6px; }
+.h2h-row-header .avatar { width: 22px; height: 22px; font-size: 0.65rem; }
+.h2h-cell {
+  padding: 6px 10px;
+  text-align: center;
+  white-space: nowrap;
+  border-top: 1px solid var(--border);
+}
+.h2h-self { color: var(--text-dim); }
+.h2h-pos { color: var(--pos); }
+.h2h-neg { color: var(--neg); }
+
 /* --- Formularios --- */
 input:not([type="checkbox"]), select {
   background: var(--card);
@@ -683,6 +733,9 @@ button {
 
   <div id="cla-tab" class="tab-panel hidden">
     <h1>🏆 Clasificación</h1>
+    <div class="quick-actions">
+      <button class="btn-secondary" onclick="openHeadToHeadMatrix()">🆚 Ver enfrentamientos</button>
+    </div>
     <div id="cla-list"></div>
   </div>
 
@@ -763,6 +816,13 @@ button {
   </div>
 </div>
 
+<div id="matrix-modal" class="modal hidden" onclick="if (event.target === this) closeMatrixModal()">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeMatrixModal()" aria-label="Cerrar">✕</button>
+    <div id="matrix-modal-body"></div>
+  </div>
+</div>
+
 <div id="update-banner" class="hidden">
   <span>Hay una nueva versión disponible</span>
   <button id="update-btn">Actualizar</button>
@@ -782,6 +842,7 @@ button {
 <script src="js/elo.js"></script>
 <script src="js/players.js"></script>
 <script src="js/leaderboard.js"></script>
+<script src="js/matrix.js"></script>
 <script src="js/matches.js"></script>
 <script src="js/history.js"></script>
 <script src="js/playerdetail.js"></script>

@@ -1,4 +1,4 @@
-const VERSION = 'v17';
+const VERSION = 'v18';
 const CACHE   = 'musete-' + VERSION;
 
 const CORE = [
@@ -10,6 +10,7 @@ const CORE = [
   './js/elo.js',
   './js/players.js',
   './js/leaderboard.js',
+  './js/matrix.js',
   './js/matches.js',
   './js/history.js',
   './js/playerdetail.js',

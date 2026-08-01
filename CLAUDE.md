@@ -25,6 +25,7 @@ musete/
 │   ├── elo.js                # fórmula de ELO (funciones puras)
 │   ├── players.js             # pestaña Jugadores
 │   ├── leaderboard.js         # pestaña Clasificación
+│   ├── matrix.js               # modal "🆚 Enfrentamientos" (abierto desde Clasificación)
 │   ├── matches.js             # pestaña Registrar + feed de últimas partidas en Inicio
 │   ├── history.js             # pestaña Historial (todas las partidas, filtro por jugador)
 │   ├── playerdetail.js         # modal de detalle de jugador (nombre editable, foto, gráfica de ELO, curiosidades, sus partidas)
@@ -164,6 +165,12 @@ Ejemplos verificados (ver comentario al final de `elo.js`):
 - **Equilibrado por ELO**: mismo criterio de descanso que "sin repetir". Se ordena por ELO y se empareja en "serpiente" (1º con último, 2º con penúltimo…) para formar equipos de nivel parejo; luego se emparejan mesas por ELO combinado más cercano.
 
 Las 3 son heurísticas greedy documentadas, no solvers óptimos — suficiente para grupos de 8-16 amigos. El botón "Regenerar" vuelve a ejecutar el mismo modo (los empates aleatorios producen resultados distintos en cada click).
+
+## Enfrentamientos — matriz todos contra todos
+
+`js/matrix.js`, modal abierto desde el botón "🆚 Ver enfrentamientos" en Clasificación. `computeHeadToHeadMatrix()` recorre todas las `matches` y para cada partida suma el resultado a cada combinación jugador-de-equipo-A × jugador-de-equipo-B (2×2 = 4 pares por partida) — **solo cuenta como rivales**, las partidas jugadas como pareja no se reflejan aquí (para eso está "Mejor pareja" en las curiosidades del modal de jugador, `playerdetail.js`).
+
+Tabla con cabecera de columna y primera columna fijas (`position: sticky`) para poder desplazarse en horizontal con grupos grandes sin perder de vista quién es cada fila/columna. Las columnas usan las 3 primeras letras del nombre (con el nombre completo en `title`) para que quepan más jugadores en pantalla; las filas sí llevan avatar + nombre completo. Celda `·` = todavía no se han enfrentado; `—` = la diagonal (un jugador contra sí mismo).
 
 ## CSS — variables y convenciones
 
